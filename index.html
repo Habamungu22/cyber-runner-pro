@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CYBER RUNNER PRO - Mobile Edition</title>
+    <title>CYBER RUNNER PRO - Standalone Edition</title>
     <style>
         :root {
             --bg: #03050c;
@@ -78,7 +78,6 @@
             pointer-events: auto;
         }
 
-        /* Controls pour Mobile Overlay */
         .touch-controls {
             position: absolute; bottom: 20px; left: 0; right: 0;
             display: flex; justify-content: space-between; padding: 0 20px;
@@ -136,7 +135,7 @@
             border-radius: 8px; padding: 10px; display: flex; align-items: center; gap: 12px;
         }
         .shop-item.active { border-color: var(--neon-blue); }
-        .shop-item img { width: 35px; height: 55px; object-fit: contain; }
+        .car-preview { width: 35px; height: 55px; border-radius: 4px; border: 1px solid; }
         .shop-info { flex-grow: 1; }
         .shop-title { font-weight: bold; font-size: 13px; }
         .shop-ability { font-size: 11px; color: #a0aab8; margin-top: 2px; }
@@ -193,14 +192,12 @@
         <div id="badgeTurbo" class="badge badge-turbo">⚡ TURBO</div>
     </div>
 
-    <!-- Contrôles Tactiles Écran -->
     <div class="touch-controls">
         <div class="touch-btn" id="btnLeft">◄</div>
         <div class="touch-btn" id="btnJump">▲</div>
         <div class="touch-btn" id="btnRight">►</div>
     </div>
 
-    <!-- Écran Principal -->
     <div id="startScreen" class="overlay">
         <h1>Cyber Runner Pro</h1>
         <div class="brand">HABA TECHNOLOGIE</div>
@@ -218,7 +215,6 @@
         <button class="btn" onclick="startGame()">LANCER LA COURSE</button>
     </div>
 
-    <!-- Écran Game Over -->
     <div id="gameOverScreen" class="overlay hidden">
         <h1 style="color: var(--neon-pink);">CRASH DÉTECTÉ</h1>
         <div class="brand">HABA TECHNOLOGIE</div>
@@ -237,16 +233,16 @@ const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 
 const CARS = [
-    { id: 0, name: "Cyber Runner", price: 0, filter: "none", ability: "Aucune capacité", color: "#00f3ff" },
-    { id: 1, name: "Neon Interceptor", price: 100, filter: "hue-rotate(140deg) brightness(1.2)", ability: "⚡ Vitesse latérale +15%", color: "#ff0055" },
-    { id: 2, name: "Phantom Glider", price: 250, filter: "hue-rotate(260deg) brightness(1.2)", ability: "🧲 Aimant passif permanent", color: "#00ff66" },
-    { id: 3, name: "Hyper Titan", price: 500, filter: "hue-rotate(50deg) brightness(1.3)", ability: "🛡️ Démarre avec un Bouclier", color: "#ffe600" }
+    { id: 0, name: "Cyber Runner", price: 0, ability: "Aucune capacité", color: "#00f3ff" },
+    { id: 1, name: "Neon Interceptor", price: 100, ability: "⚡ Vitesse latérale +15%", color: "#ff0055" },
+    { id: 2, name: "Phantom Glider", price: 250, ability: "🧲 Aimant passif permanent", color: "#00ff66" },
+    { id: 3, name: "Hyper Titan", price: 500, ability: "🛡️ Démarre avec un Bouclier", color: "#ffe600" }
 ];
 
 const QUESTS_DEF = [
-    { id: "c30", title: "Collector", desc: "Récolter 30 pièces en 1 partie", reward: 50, target: 30, type: "coins" },
-    { id: "t45", title: "Survivant", desc: "Survivre au moins 45 secondes", reward: 75, target: 45, type: "time" },
-    { id: "s1", title: "Invincible", desc: "Obtenir 1 Bouclier en partie", reward: 40, target: 1, type: "shield" }
+    { id: "c30", title: "Collector", desc: "Récolter 30 pièces en 1 partie", reward: 50 },
+    { id: "t45", title: "Survivant", desc: "Survivre au moins 45 secondes", reward: 75 },
+    { id: "s1", title: "Invincible", desc: "Obtenir 1 Bouclier en partie", reward: 40 }
 ];
 
 let bankCoins = parseInt(localStorage.getItem("cyber_bank_coins")) || 0;
@@ -258,7 +254,7 @@ let questState = JSON.parse(localStorage.getItem("cyber_quests_state")) || {
     s1: { done: false, claimed: false }
 };
 
-// Audio
+// Synthétiseur Audio
 const AudioCtx = window.AudioContext || window.webkitAudioContext;
 let audioCtx = null;
 let musicMuted = false;
@@ -309,11 +305,7 @@ function playSFX(freq1, freq2, type="sine", duration=0.2) {
     osc.start(); osc.stop(audioCtx.currentTime + duration);
 }
 
-// Images
-const playerImg = new Image(); playerImg.src = 'https://svgsilh.com/svg/155823.svg';
-const obstacleImg = new Image(); obstacleImg.src = 'https://svgsilh.com/svg/309878.svg';
-const coinImg = new Image(); coinImg.src = 'https://svgsilh.com/svg/1314467.svg';
-
+// Variables de jeu
 const lanes = [90, 225, 360];
 let currentLane = 1;
 let playerX = lanes[1], playerY = 550;
@@ -323,7 +315,7 @@ let gameRunning = false, score = 0, multiplier = 1, highScore = localStorage.get
 let sessionCoins = 0, speed = 6, gameStartTime = 0, sessionDuration = 0, shieldCollectedInSession = false;
 
 let hasShield = false, magnetTimer = 0, turboTimer = 0;
-let obstacles = [], coins = [], powerups = [], particles = [];
+let obstacles = [], coins = [], powerups = [];
 
 function switchTab(tab) {
     document.getElementById("tabGarage").classList.toggle("active", tab === 'garage');
@@ -344,7 +336,7 @@ function renderGarage() {
 
         view.innerHTML += `
             <div class="shop-item ${isEquipped ? 'active' : ''}">
-                <img src="${playerImg.src}" style="filter: ${car.filter};" alt="${car.name}">
+                <div class="car-preview" style="background: ${car.color}; border-color: ${car.color}"></div>
                 <div class="shop-info">
                     <div class="shop-title" style="color: ${car.color}">${car.name}</div>
                     <div class="shop-ability">${car.ability}</div>
@@ -410,10 +402,8 @@ function openMenu() {
     document.getElementById("gameOverScreen").classList.add("hidden");
 }
 
-// GESTION DU TACTILE & SWIPE (MOBILE)
-let touchStartX = 0;
-let touchStartY = 0;
-
+// Touches & Contrôles
+let touchStartX = 0; let touchStartY = 0;
 window.addEventListener('touchstart', e => {
     touchStartX = e.changedTouches[0].screenX;
     touchStartY = e.changedTouches[0].screenY;
@@ -423,12 +413,8 @@ window.addEventListener('touchend', e => {
     if (!gameRunning) return;
     let touchEndX = e.changedTouches[0].screenX;
     let touchEndY = e.changedTouches[0].screenY;
-    handleGesture(touchStartX, touchStartY, touchEndX, touchEndY);
-}, { passive: false });
-
-function handleGesture(startX, startY, endX, endY) {
-    let diffX = endX - startX;
-    let diffY = endY - startY;
+    let diffX = touchEndX - touchStartX;
+    let diffY = touchEndY - touchStartY;
 
     if (Math.abs(diffX) > Math.abs(diffY)) {
         if (Math.abs(diffX) > 30) {
@@ -438,18 +424,16 @@ function handleGesture(startX, startY, endX, endY) {
     } else {
         if (diffY < -30 && !isJumping) triggerJump();
     }
-}
+}, { passive: false });
 
 function triggerJump() {
     if (!isJumping) { isJumping = true; jumpTimer = 0; playSFX(200, 500, "square", 0.15); }
 }
 
-// Boutons On-screen
 document.getElementById("btnLeft").addEventListener("pointerdown", (e) => { e.stopPropagation(); if (gameRunning && currentLane > 0) currentLane--; });
 document.getElementById("btnRight").addEventListener("pointerdown", (e) => { e.stopPropagation(); if (gameRunning && currentLane < 2) currentLane++; });
 document.getElementById("btnJump").addEventListener("pointerdown", (e) => { e.stopPropagation(); if (gameRunning) triggerJump(); });
 
-// Clavier PC
 window.addEventListener("keydown", e => {
     if (!gameRunning) return;
     if ((e.code === "ArrowLeft" || e.code === "KeyA") && currentLane > 0) currentLane--;
@@ -468,16 +452,10 @@ function startGame() {
     gameStartTime = Date.now(); shieldCollectedInSession = false;
 
     hasShield = (equippedCar === 3);
-    obstacles = []; coins = []; powerups = []; particles = [];
+    obstacles = []; coins = []; powerups = [];
     gameRunning = true;
 
     updateUI(); startMusic(); loop();
-}
-
-function spawnParticles(x, y, color) {
-    for (let i = 0; i < 8; i++) {
-        particles.push({ x: x, y: y, vx: (Math.random() - 0.5) * 6, vy: (Math.random() - 0.5) * 6, life: 20, color: color });
-    }
 }
 
 function updateUI() {
@@ -519,7 +497,7 @@ function update() {
     for (let i = obstacles.length - 1; i >= 0; i--) {
         let obs = obstacles[i]; obs.y += currentSpeed;
         if (Math.abs(playerX - lanes[obs.lane]) < 35 && Math.abs(playerY - obs.y) < 50) {
-            if (turboTimer > 0) { spawnParticles(lanes[obs.lane], obs.y, "#ff0055"); obstacles.splice(i, 1); }
+            if (turboTimer > 0) { obstacles.splice(i, 1); }
             else if (!isJumping || jumpHeight < 30) {
                 if (hasShield) { hasShield = false; multiplier = 1; obstacles.splice(i, 1); }
                 else { gameOver(); }
@@ -533,7 +511,7 @@ function update() {
             if (p.type === 'shield') { hasShield = true; shieldCollectedInSession = true; }
             if (p.type === 'magnet') magnetTimer = 360;
             if (p.type === 'turbo') turboTimer = 180;
-            spawnParticles(lanes[p.lane], p.y, "#ffe600"); playSFX(400, 800, "triangle", 0.25);
+            playSFX(400, 800, "triangle", 0.25);
             powerups.splice(i, 1);
         } else if (p.y > canvas.height + 40) powerups.splice(i, 1);
     }
@@ -553,24 +531,71 @@ function update() {
     }
 }
 
+// FONCTIONS DE DESSIN CANVAS DIRECT
+function drawPlayer(x, y, color) {
+    ctx.save();
+    ctx.translate(x, y - jumpHeight);
+    
+    // Ombre
+    ctx.fillStyle = "rgba(0,0,0,0.3)";
+    ctx.beginPath(); ctx.ellipse(0, 40 + jumpHeight, 20, 8, 0, 0, Math.PI * 2); ctx.fill();
+
+    // Carrosserie Voiture
+    ctx.fillStyle = color;
+    ctx.shadowColor = color; ctx.shadowBlur = 12;
+    ctx.beginPath(); ctx.roundRect(-20, -35, 40, 70, 8); ctx.fill();
+    
+    // Toit / Vitre
+    ctx.fillStyle = "#111"; ctx.shadowBlur = 0;
+    ctx.beginPath(); ctx.roundRect(-14, -15, 28, 30, 4); ctx.fill();
+
+    // Phares avant
+    ctx.fillStyle = "#fff";
+    ctx.fillRect(-16, -33, 8, 4); ctx.fillRect(8, -33, 8, 4);
+
+    // Feux arrière
+    ctx.fillStyle = "#ff0000";
+    ctx.fillRect(-16, 30, 8, 3); ctx.fillRect(8, 30, 8, 3);
+
+    ctx.restore();
+}
+
+function drawObstacle(x, y) {
+    ctx.save(); ctx.translate(x, y);
+    ctx.fillStyle = "#ff0055"; ctx.shadowColor = "#ff0055"; ctx.shadowBlur = 10;
+    ctx.beginPath(); ctx.roundRect(-22, -35, 44, 70, 6); ctx.fill();
+    ctx.fillStyle = "#220011"; ctx.shadowBlur = 0;
+    ctx.fillRect(-16, -20, 32, 40);
+    ctx.restore();
+}
+
+function drawCoin(x, y) {
+    ctx.save(); ctx.translate(x, y);
+    ctx.fillStyle = "#ffe600"; ctx.shadowColor = "#ffe600"; ctx.shadowBlur = 8;
+    ctx.beginPath(); ctx.arc(0, 0, 12, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "#000"; ctx.shadowBlur = 0;
+    ctx.font = "bold 12px monospace"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.fillText("💰", 0, 0);
+    ctx.restore();
+}
+
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.strokeStyle = "rgba(0, 243, 255, 0.15)";
+    
+    // Voies
+    ctx.strokeStyle = "rgba(0, 243, 255, 0.15)"; ctx.lineWidth = 2;
     for (let y = (score * 3) % 40; y < canvas.height; y += 40) {
         ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
     }
 
-    coins.forEach(c => ctx.drawImage(coinImg, lanes[c.lane] - 15, c.y - 15, 30, 30));
+    coins.forEach(c => drawCoin(lanes[c.lane], c.y));
     powerups.forEach(p => {
-        ctx.font = "20px sans-serif"; ctx.textAlign = "center";
+        ctx.font = "22px sans-serif"; ctx.textAlign = "center";
         ctx.fillText(p.type === 'shield' ? "🛡️" : (p.type === 'magnet' ? "🧲" : "⚡"), lanes[p.lane], p.y);
     });
-    obstacles.forEach(obs => ctx.drawImage(obstacleImg, lanes[obs.lane] - 25, obs.y - 40, 50, 80));
+    obstacles.forEach(obs => drawObstacle(lanes[obs.lane], obs.y));
 
-    ctx.save(); ctx.translate(playerX, playerY - jumpHeight);
-    ctx.filter = CARS[equippedCar].filter;
-    ctx.drawImage(playerImg, -22, -40, 44, 80);
-    ctx.restore();
+    drawPlayer(playerX, playerY, CARS[equippedCar].color);
 }
 
 function checkQuests() {
