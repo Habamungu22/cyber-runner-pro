@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>CYBER RUNNER PRO - Ultimate Edition</title>
+    <title>CYBER RUNNER PRO - Garage Edition</title>
     <style>
         :root {
             --bg: #03050c;
@@ -12,7 +12,7 @@
             --neon-yellow: #ffe600;
             --neon-green: #00ff66;
             --neon-purple: #b000ff;
-            --panel-bg: rgba(10, 15, 28, 0.92);
+            --panel-bg: rgba(10, 15, 28, 0.94);
         }
 
         * { box-sizing: border-box; user-select: none; touch-action: none; }
@@ -36,6 +36,8 @@
             border-radius: 12px;
             overflow: hidden;
             border: 2px solid rgba(0, 243, 255, 0.5);
+            width: 450px;
+            height: 650px;
             max-width: 100vw;
             max-height: 100vh;
         }
@@ -63,12 +65,6 @@
             border-radius: 6px;
             border: 1px solid rgba(0, 243, 255, 0.3);
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-        }
-
-        .multiplier-badge {
-            color: var(--neon-yellow);
-            font-size: 14px;
-            text-shadow: 0 0 8px var(--neon-yellow);
         }
 
         .powerup-status {
@@ -117,76 +113,104 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(3, 5, 12, 0.94);
+            background: rgba(3, 5, 12, 0.95);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             z-index: 10;
+            padding: 20px;
         }
 
         h1 {
-            font-size: 30px;
+            font-size: 26px;
             color: var(--neon-blue);
             margin: 0 0 5px 0;
             text-transform: uppercase;
-            letter-spacing: 3px;
+            letter-spacing: 2px;
             text-shadow: 0 0 15px var(--neon-blue);
         }
 
         .brand {
             color: var(--neon-yellow);
             font-family: monospace;
-            font-size: 12px;
+            font-size: 11px;
             letter-spacing: 2px;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
 
-        .controls-info {
-            background: var(--panel-bg);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 12px 18px;
-            border-radius: 8px;
-            font-size: 12px;
-            color: #a0aab8;
-            margin-bottom: 20px;
-            text-align: center;
-            line-height: 1.6;
-            max-width: 85%;
-        }
-
-        .car-selection {
+        .shop-container {
+            width: 100%;
             display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 15px;
+            max-height: 320px;
+            overflow-y: auto;
+            padding-right: 5px;
         }
 
-        .car-option {
-            width: 55px;
-            height: 75px;
-            border: 2px solid rgba(255, 255, 255, 0.2);
+        .shop-item {
+            background: var(--panel-bg);
+            border: 1px solid rgba(255, 255, 255, 0.15);
             border-radius: 8px;
-            cursor: pointer;
-            padding: 5px;
-            transition: 0.2s;
-            background: rgba(255, 255, 255, 0.05);
+            padding: 10px;
             display: flex;
             align-items: center;
-            justify-content: center;
+            gap: 12px;
+            transition: 0.2s;
         }
 
-        .car-option.selected {
+        .shop-item.active {
             border-color: var(--neon-blue);
-            box-shadow: 0 0 15px var(--neon-blue);
-            background: rgba(0, 243, 255, 0.1);
+            box-shadow: 0 0 10px rgba(0, 243, 255, 0.2);
+        }
+
+        .shop-item img {
+            width: 35px;
+            height: 55px;
+            object-fit: contain;
+        }
+
+        .shop-info {
+            flex-grow: 1;
+        }
+
+        .shop-title {
+            font-weight: bold;
+            font-size: 13px;
+            color: #fff;
+        }
+
+        .shop-ability {
+            font-size: 11px;
+            color: #a0aab8;
+            margin-top: 2px;
+        }
+
+        .shop-btn {
+            background: transparent;
+            border: 1px solid var(--neon-green);
+            color: var(--neon-green);
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: monospace;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .shop-btn.equipped {
+            border-color: var(--neon-blue);
+            color: var(--neon-blue);
         }
 
         .btn {
             background: transparent;
             border: 2px solid var(--neon-pink);
             color: var(--neon-pink);
-            padding: 12px 35px;
-            font-size: 16px;
+            padding: 10px 30px;
+            font-size: 15px;
             font-family: monospace;
             font-weight: bold;
             cursor: pointer;
@@ -198,7 +222,13 @@
         .btn:hover { 
             background: var(--neon-pink); 
             color: #fff; 
-            box-shadow: 0 0 25px var(--neon-pink); 
+        }
+
+        .total-coins-display {
+            font-family: monospace;
+            color: var(--neon-green);
+            font-size: 14px;
+            margin-bottom: 15px;
         }
 
         .hidden { display: none !important; }
@@ -212,10 +242,10 @@
     <div class="hud">
         <div class="hud-card">
             SCORE: <span id="score" style="color: var(--neon-blue);">0</span>
-            <span id="multiplier" class="multiplier-badge">x1</span>
+            <span id="multiplier" style="color: var(--neon-yellow);">x1</span>
         </div>
         <div class="hud-card">PIÈCES: <span id="coins" style="color: var(--neon-green);">0</span></div>
-        <button class="music-btn" id="musicToggleBtn" onclick="toggleMusic()">🔊 AUDIO: ON</button>
+        <button class="music-btn" id="musicToggleBtn" onclick="toggleMusic()">🔊 AUDIO</button>
     </div>
 
     <div class="powerup-status">
@@ -224,32 +254,16 @@
         <div id="badgeTurbo" class="badge badge-turbo">⚡ TURBO (<span id="turboTimer">0</span>s)</div>
     </div>
 
-    <!-- Écran de démarrage -->
+    <!-- Écran Boutique & Démarrage -->
     <div id="startScreen" class="overlay">
         <h1>Cyber Runner Pro</h1>
-        <div class="brand">HABA TECHNOLOGIE - ULTIMATE</div>
+        <div class="brand">HABA TECHNOLOGIE - GARAGE</div>
 
-        <div class="controls-info">
-            <b>Z/S ou HAUT/BAS :</b> Avancer/Reculer<br>
-            <b>Q/D ou GAUCHE/DROITE :</b> Changer de voie<br>
-            <b>ESPACE :</b> Sauter<br>
-            <b>MOBILE :</b> Glisser le doigt (Swipe)
-        </div>
+        <div class="total-coins-display">💰 SOLDE : <span id="totalCoins">0</span> PIÈCES</div>
 
-        <div style="font-size: 12px; color: #8899a6; margin-bottom: 10px;">CHOIX DU VÉHICULE :</div>
-        <div class="car-selection">
-            <div class="car-option selected" onclick="selectCar(0, this)">
-                <img src="https://svgsilh.com/svg/155823.svg" style="width:100%; filter: drop-shadow(0 0 3px #00f3ff);" alt="Bleu">
-            </div>
-            <div class="car-option" onclick="selectCar(1, this)">
-                <img src="https://svgsilh.com/svg/155823.svg" style="width:100%; filter: drop-shadow(0 0 3px #ff0055) hue-rotate(140deg);" alt="Rouge">
-            </div>
-            <div class="car-option" onclick="selectCar(2, this)">
-                <img src="https://svgsilh.com/svg/155823.svg" style="width:100%; filter: drop-shadow(0 0 3px #00ff66) hue-rotate(260deg);" alt="Vert">
-            </div>
-        </div>
+        <div class="shop-container" id="shopList"></div>
 
-        <button class="btn" onclick="startGame()">JOUER</button>
+        <button class="btn" onclick="startGame()">LANCER LA COURSE</button>
     </div>
 
     <!-- Écran Game Over -->
@@ -258,9 +272,10 @@
         <div class="brand">HABA TECHNOLOGIE</div>
         <p style="color: #a0aab8; text-align: center; line-height: 1.8;">
             Score Session : <b id="finalScore" style="color: #fff">0</b><br>
+            Pièces Gagnées : <b id="gainedCoins" style="color: var(--neon-green)">0</b><br>
             Record : <b id="bestScore" style="color: var(--neon-yellow)">0</b>
         </p>
-        <button class="btn" onclick="startGame()">REESSAYER</button>
+        <button class="btn" onclick="openShop()">GARAGE / BAZAR</button>
     </div>
 </div>
 
@@ -268,7 +283,19 @@
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 
-// Synthétiseur Web Audio
+// Base de Données des Voitures
+const CARS = [
+    { id: 0, name: "Cyber Runner", price: 0, filter: "none", ability: "Aucune capacité spéciale", color: "#00f3ff" },
+    { id: 1, name: "Neon Interceptor", price: 100, filter: "hue-rotate(140deg) brightness(1.2)", ability: "⚡ Vitesse latérale +15%", color: "#ff0055" },
+    { id: 2, name: "Phantom Glider", price: 250, filter: "hue-rotate(260deg) brightness(1.2)", ability: "🧲 Aimant passif permanent", color: "#00ff66" },
+    { id: 3, name: "Hyper Titan", price: 500, filter: "hue-rotate(50deg) brightness(1.3)", ability: "🛡️ Démarre avec un Bouclier", color: "#ffe600" }
+];
+
+let bankCoins = parseInt(localStorage.getItem("cyber_bank_coins")) || 0;
+let unlockedCars = JSON.parse(localStorage.getItem("cyber_unlocked_cars")) || [0];
+let equippedCar = parseInt(localStorage.getItem("cyber_equipped_car")) || 0;
+
+// Audio Synthétiseur
 const AudioCtx = window.AudioContext || window.webkitAudioContext;
 let audioCtx = null;
 let musicMuted = false;
@@ -282,7 +309,7 @@ function initAudio() {
 
 function toggleMusic() {
     musicMuted = !musicMuted;
-    document.getElementById("musicToggleBtn").innerText = musicMuted ? "🔇 AUDIO: OFF" : "🔊 AUDIO: ON";
+    document.getElementById("musicToggleBtn").innerText = musicMuted ? "🔇 AUDIO" : "🔊 AUDIO";
     if (musicMuted) stopMusic();
     else if (gameRunning) startMusic();
 }
@@ -299,13 +326,13 @@ function playSynthwaveNote() {
     
     const filter = audioCtx.createBiquadFilter();
     filter.type = "lowpass";
-    filter.frequency.setValueAtTime(400, audioCtx.currentTime);
+    filter.frequency.setValueAtTime(350, audioCtx.currentTime);
 
-    gain.gain.setValueAtTime(0.07, audioCtx.currentTime);
+    gain.gain.setValueAtTime(0.06, audioCtx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.12);
 
     osc.connect(filter);
-    filter.connect(gain);
+    filter.connect(bassGain = gain);
     gain.connect(audioCtx.destination);
     osc.start();
     osc.stop(audioCtx.currentTime + 0.12);
@@ -330,22 +357,13 @@ function playSFX(freq1, freq2, type="sine", duration=0.2) {
     osc.stop(audioCtx.currentTime + duration);
 }
 
-// SVG Assets
-const playerImgs = [new Image(), new Image(), new Image()];
-playerImgs[0].src = 'https://svgsilh.com/svg/155823.svg';
-
+// Images
+const playerImg = new Image();
+playerImg.src = 'https://svgsilh.com/svg/155823.svg';
 const obstacleImg = new Image();
 obstacleImg.src = 'https://svgsilh.com/svg/309878.svg';
-
 const coinImg = new Image();
 coinImg.src = 'https://svgsilh.com/svg/1314467.svg';
-
-let selectedCarIndex = 0;
-function selectCar(index, element) {
-    selectedCarIndex = index;
-    document.querySelectorAll('.car-option').forEach(el => el.classList.remove('selected'));
-    element.classList.add('selected');
-}
 
 const lanes = [90, 225, 360];
 let currentLane = 1;
@@ -360,7 +378,7 @@ let gameRunning = false;
 let score = 0;
 let multiplier = 1;
 let highScore = localStorage.getItem("cyber_runner_hs") || 0;
-let coinsCollected = 0;
+let sessionCoins = 0;
 let speed = 6;
 
 let hasShield = false;
@@ -372,7 +390,72 @@ let coins = [];
 let powerups = [];
 let particles = [];
 
-// Tactile & Clavier
+// Interface Magasin
+function renderShop() {
+    document.getElementById("totalCoins").innerText = bankCoins;
+    const shopList = document.getElementById("shopList");
+    shopList.innerHTML = "";
+
+    CARS.forEach(car => {
+        const isUnlocked = unlockedCars.includes(car.id);
+        const isEquipped = equippedCar === car.id;
+
+        let btnHTML = "";
+        if (isEquipped) {
+            btnHTML = `<button class="shop-btn equipped">ÉQUIPÉ</button>`;
+        } else if (isUnlocked) {
+            btnHTML = `<button class="shop-btn" onclick="equipCar(${car.id})">CHOISIR</button>`;
+        } else {
+            btnHTML = `<button class="shop-btn" style="border-color: var(--neon-yellow); color: var(--neon-yellow);" onclick="buyCar(${car.id})">${car.price} 💰</button>`;
+        }
+
+        shopList.innerHTML += `
+            <div class="shop-item ${isEquipped ? 'active' : ''}">
+                <img src="${playerImg.src}" style="filter: ${car.filter};" alt="${car.name}">
+                <div class="shop-info">
+                    <div class="shop-title" style="color: ${car.color}">${car.name}</div>
+                    <div class="shop-ability">${car.ability}</div>
+                </div>
+                ${btnHTML}
+            </div>
+        `;
+    });
+}
+
+function buyCar(id) {
+    const car = CARS[id];
+    if (bankCoins >= car.price) {
+        bankCoins -= car.price;
+        unlockedCars.push(id);
+        equippedCar = id;
+        saveProgress();
+        renderShop();
+        playSFX(400, 800, "triangle", 0.3);
+    } else {
+        playSFX(150, 80, "sawtooth", 0.2);
+    }
+}
+
+function equipCar(id) {
+    equippedCar = id;
+    saveProgress();
+    renderShop();
+    playSFX(500, 700, "sine", 0.15);
+}
+
+function saveProgress() {
+    localStorage.setItem("cyber_bank_coins", bankCoins);
+    localStorage.setItem("cyber_unlocked_cars", JSON.stringify(unlockedCars));
+    localStorage.setItem("cyber_equipped_car", equippedCar);
+}
+
+function openShop() {
+    renderShop();
+    document.getElementById("startScreen").classList.remove("hidden");
+    document.getElementById("gameOverScreen").classList.add("hidden");
+}
+
+// Contrôles
 const keys = {};
 window.addEventListener("keydown", e => {
     keys[e.code] = true;
@@ -384,24 +467,6 @@ window.addEventListener("keydown", e => {
 });
 window.addEventListener("keyup", e => keys[e.code] = false);
 
-let touchStartX = 0, touchStartY = 0;
-window.addEventListener("touchstart", e => {
-    touchStartX = e.touches[0].clientX;
-    touchStartY = e.touches[0].clientY;
-});
-window.addEventListener("touchend", e => {
-    if (!gameRunning) return;
-    let dx = e.changedTouches[0].clientX - touchStartX;
-    let dy = e.changedTouches[0].clientY - touchStartY;
-
-    if (Math.abs(dx) > Math.abs(dy)) {
-        if (dx > 30 && currentLane < 2) currentLane++;
-        else if (dx < -30 && currentLane > 0) currentLane--;
-    } else if (dy < -30 && !isJumping) {
-        isJumping = true; jumpTimer = 0; playSFX(200, 500, "square", 0.15);
-    }
-});
-
 function startGame() {
     initAudio();
     document.getElementById("startScreen").classList.add("hidden");
@@ -412,13 +477,15 @@ function startGame() {
     playerY = 520;
     score = 0;
     multiplier = 1;
-    coinsCollected = 0;
+    sessionCoins = 0;
     speed = 6;
     isJumping = false;
     jumpHeight = 0;
-    hasShield = false;
     magnetTimer = 0;
     turboTimer = 0;
+
+    // Capacité Spéciale : Hyper Titan démarre avec un Bouclier
+    hasShield = (equippedCar === 3);
 
     obstacles = [];
     coins = [];
@@ -442,32 +509,10 @@ function spawnParticles(x, y, color) {
     }
 }
 
-function spawnEntities() {
-    let effectiveSpeed = turboTimer > 0 ? speed * 1.6 : speed;
-    if (Math.random() < 0.035) obstacles.push({ lane: Math.floor(Math.random() * 3), y: -80 });
-    if (Math.random() < 0.03) coins.push({ lane: Math.floor(Math.random() * 3), y: -60 });
-    
-    if (Math.random() < 0.008) {
-        let types = ['shield', 'magnet', 'turbo'];
-        powerups.push({ lane: Math.floor(Math.random() * 3), y: -60, type: types[Math.floor(Math.random() * types.length)] });
-    }
-}
-
 function updateUI() {
     document.getElementById("badgeShield").classList.toggle("active", hasShield);
-    
-    const magnetBadge = document.getElementById("badgeMagnet");
-    if (magnetTimer > 0) {
-        magnetBadge.classList.add("active");
-        document.getElementById("magnetTimer").innerText = Math.ceil(magnetTimer / 60);
-    } else magnetBadge.classList.remove("active");
-
-    const turboBadge = document.getElementById("badgeTurbo");
-    if (turboTimer > 0) {
-        turboBadge.classList.add("active");
-        document.getElementById("turboTimer").innerText = Math.ceil(turboTimer / 60);
-    } else turboBadge.classList.remove("active");
-
+    document.getElementById("badgeMagnet").classList.toggle("active", magnetTimer > 0 || equippedCar === 2);
+    document.getElementById("badgeTurbo").classList.toggle("active", turboTimer > 0);
     document.getElementById("multiplier").innerText = `x${multiplier}`;
 }
 
@@ -483,13 +528,11 @@ function update() {
     updateUI();
 
     document.getElementById("score").innerText = Math.floor(score / 10);
-    document.getElementById("coins").innerText = coinsCollected;
+    document.getElementById("coins").innerText = sessionCoins;
 
-    let targetX = lanes[currentLane];
-    playerX += (targetX - playerX) * 0.25;
-
-    if ((keys["ArrowUp"] || keys["KeyW"]) && playerY > 120) playerY -= 4;
-    if ((keys["ArrowDown"] || keys["KeyS"]) && playerY < canvas.height - 70) playerY += 4;
+    // Capacité Spéciale : Neon Interceptor va plus vite latéralement
+    let moveSpeed = equippedCar === 1 ? 0.35 : 0.25;
+    playerX += (lanes[currentLane] - playerX) * moveSpeed;
 
     if (isJumping) {
         jumpTimer += 0.07;
@@ -497,42 +540,46 @@ function update() {
         if (jumpTimer >= Math.PI) { isJumping = false; jumpHeight = 0; }
     }
 
-    // Effet de Réacteur sous la voiture
+    // Traînée réacteur
     particles.push({
         x: playerX + (Math.random() - 0.5) * 10,
         y: playerY - jumpHeight + 35,
         vx: (Math.random() - 0.5) * 2,
         vy: Math.random() * 3 + 2,
-        life: 12, color: turboTimer > 0 ? "#ffe600" : "#00f3ff"
+        life: 12, color: CARS[equippedCar].color
     });
 
-    spawnEntities();
+    // Spawns
+    if (Math.random() < 0.035) obstacles.push({ lane: Math.floor(Math.random() * 3), y: -80 });
+    if (Math.random() < 0.03) coins.push({ lane: Math.floor(Math.random() * 3), y: -60 });
+    if (Math.random() < 0.008) {
+        let types = ['shield', 'magnet', 'turbo'];
+        powerups.push({ lane: Math.floor(Math.random() * 3), y: -60, type: types[Math.floor(Math.random() * types.length)] });
+    }
 
-    // Traitement des Particules
+    // Particules
     for (let i = particles.length - 1; i >= 0; i--) {
         let p = particles[i];
         p.x += p.vx; p.y += p.vy; p.life--;
         if (p.life <= 0) particles.splice(i, 1);
     }
 
-    // Collisions Obstacles
+    // Obstacles
     for (let i = obstacles.length - 1; i >= 0; i--) {
         let obs = obstacles[i];
         obs.y += currentSpeed;
         let obsX = lanes[obs.lane];
 
         if (Math.abs(playerX - obsX) < 35 && Math.abs(playerY - obs.y) < 50) {
-            if (turboTimer > 0) { // Invincibilité Turbo
+            if (turboTimer > 0) {
                 spawnParticles(obsX, obs.y, "#ff0055");
                 obstacles.splice(i, 1);
-                playSFX(150, 40, "sawtooth", 0.2);
             } else if (!isJumping || jumpHeight < 30) {
                 if (hasShield) {
                     hasShield = false;
                     multiplier = 1;
                     spawnParticles(playerX, playerY, "#00f3ff");
                     obstacles.splice(i, 1);
-                    playSFX(300, 100, "sawtooth", 0.2);
                 } else {
                     gameOver();
                 }
@@ -541,7 +588,7 @@ function update() {
         if (obs.y > canvas.height + 80) obstacles.splice(i, 1);
     }
 
-    // Collisions Powerups
+    // Powerups
     for (let i = powerups.length - 1; i >= 0; i--) {
         let p = powerups[i];
         p.y += currentSpeed;
@@ -556,23 +603,26 @@ function update() {
         } else if (p.y > canvas.height + 40) powerups.splice(i, 1);
     }
 
-    // Collisions Pièces
+    // Pièces & Aimant (Inclus Phantom Glider passif)
+    let hasActiveMagnet = magnetTimer > 0 || equippedCar === 2;
+    let magnetRange = equippedCar === 2 ? 120 : 180;
+
     for (let i = coins.length - 1; i >= 0; i--) {
         let c = coins[i];
         c.y += currentSpeed;
 
-        if (magnetTimer > 0) {
+        if (hasActiveMagnet) {
             let dx = playerX - lanes[c.lane];
             let dy = playerY - c.y;
-            if (Math.sqrt(dx * dx + dy * dy) < 180) {
+            if (Math.sqrt(dx * dx + dy * dy) < magnetRange) {
                 lanes[c.lane] += dx * 0.12;
                 c.y += dy * 0.12;
             }
         }
 
         if (Math.abs(playerX - lanes[c.lane]) < 30 && Math.abs(playerY - c.y) < 35) {
-            coinsCollected++;
-            if (coinsCollected % 10 === 0 && multiplier < 5) multiplier++;
+            sessionCoins++;
+            if (sessionCoins % 10 === 0 && multiplier < 5) multiplier++;
             spawnParticles(lanes[c.lane], c.y, "#ffe600");
             playSFX(900, 1200, "sine", 0.15);
             coins.splice(i, 1);
@@ -583,7 +633,7 @@ function update() {
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Dessin Grille Cyber Synthwave au sol
+    // Grille Sol
     ctx.strokeStyle = "rgba(0, 243, 255, 0.15)";
     ctx.lineWidth = 1;
     let offset = (score * 3) % 40;
@@ -591,7 +641,7 @@ function draw() {
         ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
     }
 
-    // Lignes de Voies Neons
+    // Voies
     ctx.strokeStyle = "rgba(0, 243, 255, 0.3)";
     ctx.lineWidth = 3;
     ctx.setLineDash([30, 20]);
@@ -602,15 +652,13 @@ function draw() {
     ctx.stroke();
     ctx.setLineDash([]);
 
-    // Dessin des Particules
+    // Particules
     particles.forEach(p => {
         ctx.fillStyle = p.color;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.life / 4, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.beginPath(); ctx.arc(p.x, p.y, p.life / 4, 0, Math.PI * 2); ctx.fill();
     });
 
-    // Dessin des Pièces
+    // Pièces
     coins.forEach(c => {
         ctx.save();
         ctx.shadowColor = "#ffe600";
@@ -619,21 +667,18 @@ function draw() {
         ctx.restore();
     });
 
-    // Dessin Powerups
+    // Powerups
     powerups.forEach(p => {
-        let x = lanes[p.lane];
         ctx.save();
         ctx.font = "22px sans-serif";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.shadowBlur = 12;
         let icon = p.type === 'shield' ? "🛡️" : (p.type === 'magnet' ? "🧲" : "⚡");
-        ctx.shadowColor = p.type === 'shield' ? "#00f3ff" : (p.type === 'magnet' ? "#ff0055" : "#ffe600");
-        ctx.fillText(icon, x, p.y);
+        ctx.fillText(icon, lanes[p.lane], p.y);
         ctx.restore();
     });
 
-    // Dessin Obstacles
+    // Obstacles
     obstacles.forEach(obs => {
         ctx.save();
         ctx.shadowColor = "#ff0055";
@@ -642,38 +687,13 @@ function draw() {
         ctx.restore();
     });
 
-    // Ombre sous le véhicule
-    if (isJumping) {
-        ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
-        ctx.beginPath();
-        ctx.ellipse(playerX, playerY, 22 * (1 - jumpHeight / 90), 12 * (1 - jumpHeight / 90), 0, 0, Math.PI * 2);
-        ctx.fill();
-    }
-
-    // Aura Bouclier
-    if (hasShield) {
-        ctx.save();
-        ctx.strokeStyle = "#00f3ff";
-        ctx.lineWidth = 3;
-        ctx.shadowColor = "#00f3ff";
-        ctx.shadowBlur = 12;
-        ctx.beginPath();
-        ctx.arc(playerX, playerY - jumpHeight, 38, 0, Math.PI * 2);
-        ctx.stroke();
-        ctx.restore();
-    }
-
-    // Voiture Joueur
+    // Voiture
     ctx.save();
     ctx.translate(playerX, playerY - jumpHeight);
-
-    ctx.shadowColor = selectedCarIndex === 0 ? "#00f3ff" : (selectedCarIndex === 1 ? "#ff0055" : "#00ff66");
-    ctx.shadowBlur = turboTimer > 0 ? 35 : (isJumping ? 25 : 12);
-
-    if (selectedCarIndex === 1) ctx.filter = "hue-rotate(140deg) brightness(1.2)";
-    if (selectedCarIndex === 2) ctx.filter = "hue-rotate(260deg) brightness(1.2)";
-
-    ctx.drawImage(playerImgs[0], -22, -40, 44, 80);
+    ctx.shadowColor = CARS[equippedCar].color;
+    ctx.shadowBlur = turboTimer > 0 ? 35 : 15;
+    ctx.filter = CARS[equippedCar].filter;
+    ctx.drawImage(playerImg, -22, -40, 44, 80);
     ctx.restore();
 }
 
@@ -681,7 +701,10 @@ function gameOver() {
     gameRunning = false;
     stopMusic();
     playSFX(100, 30, "sawtooth", 0.4);
+
     let finalScoreNum = Math.floor(score / 10);
+    bankCoins += sessionCoins;
+    saveProgress();
 
     if (finalScoreNum > highScore) {
         highScore = finalScoreNum;
@@ -689,6 +712,7 @@ function gameOver() {
     }
 
     document.getElementById("finalScore").innerText = finalScoreNum;
+    document.getElementById("gainedCoins").innerText = sessionCoins;
     document.getElementById("bestScore").innerText = highScore;
     document.getElementById("gameOverScreen").classList.remove("hidden");
 }
@@ -700,6 +724,9 @@ function loop() {
         requestAnimationFrame(loop);
     }
 }
+
+// Initialisation au chargement
+renderShop();
 </script>
 </body>
 </html>
