@@ -2,8 +2,8 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>CYBER RUNNER PRO - Daily Quests Edition</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CYBER RUNNER PRO - Mobile Edition</title>
     <style>
         :root {
             --bg: #03050c;
@@ -14,7 +14,12 @@
             --panel-bg: rgba(10, 15, 28, 0.94);
         }
 
-        * { box-sizing: border-box; user-select: none; touch-action: none; }
+        * { 
+            box-sizing: border-box; 
+            user-select: none; 
+            -webkit-user-select: none;
+            touch-action: none; 
+        }
 
         body {
             margin: 0; padding: 0;
@@ -22,6 +27,7 @@
             font-family: 'Segoe UI', Roboto, sans-serif;
             display: flex; align-items: center; justify-content: center;
             min-height: 100vh; overflow: hidden;
+            position: fixed; width: 100%; height: 100%;
         }
 
         #game-container {
@@ -29,11 +35,12 @@
             box-shadow: 0 0 50px rgba(0, 243, 255, 0.3);
             border-radius: 12px; overflow: hidden;
             border: 2px solid rgba(0, 243, 255, 0.5);
-            width: 450px; height: 680px;
-            max-width: 100vw; max-height: 100vh;
+            width: 450px; height: 100%; max-height: 750px;
+            max-width: 100vw;
+            display: flex; flex-direction: column;
         }
 
-        canvas { display: block; background: #050714; }
+        canvas { display: block; background: #050714; width: 100%; height: 100%; }
 
         .hud {
             position: absolute; top: 15px; left: 15px; right: 15px;
@@ -71,6 +78,23 @@
             pointer-events: auto;
         }
 
+        /* Controls pour Mobile Overlay */
+        .touch-controls {
+            position: absolute; bottom: 20px; left: 0; right: 0;
+            display: flex; justify-content: space-between; padding: 0 20px;
+            z-index: 6; pointer-events: none;
+        }
+
+        .touch-btn {
+            background: rgba(0, 243, 255, 0.15); border: 2px solid var(--neon-blue);
+            color: var(--neon-blue); width: 65px; height: 65px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 24px; font-weight: bold; pointer-events: auto;
+            backdrop-filter: blur(4px);
+        }
+
+        .touch-btn:active { background: var(--neon-blue); color: #000; }
+
         .overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(3, 5, 12, 0.95);
@@ -81,7 +105,7 @@
         h1 {
             font-size: 24px; color: var(--neon-blue); margin: 0 0 2px 0;
             text-transform: uppercase; letter-spacing: 2px;
-            text-shadow: 0 0 15px var(--neon-blue);
+            text-shadow: 0 0 15px var(--neon-blue); text-align: center;
         }
 
         .brand {
@@ -89,13 +113,11 @@
             letter-spacing: 2px; margin-bottom: 12px;
         }
 
-        .tabs {
-            display: flex; gap: 10px; margin-bottom: 12px; width: 100%;
-        }
+        .tabs { display: flex; gap: 10px; margin-bottom: 12px; width: 100%; }
 
         .tab-btn {
             flex: 1; background: var(--panel-bg); border: 1px solid rgba(255,255,255,0.2);
-            color: #fff; padding: 8px; font-family: monospace; font-size: 12px;
+            color: #fff; padding: 10px; font-family: monospace; font-size: 12px;
             cursor: pointer; border-radius: 6px; text-align: center;
         }
 
@@ -106,10 +128,9 @@
 
         .content-container {
             width: 100%; display: flex; flex-direction: column; gap: 10px;
-            margin-bottom: 15px; height: 310px; overflow-y: auto; padding-right: 5px;
+            margin-bottom: 15px; max-height: 280px; overflow-y: auto; padding-right: 5px;
         }
 
-        /* Shop Styles */
         .shop-item {
             background: var(--panel-bg); border: 1px solid rgba(255, 255, 255, 0.15);
             border-radius: 8px; padding: 10px; display: flex; align-items: center; gap: 12px;
@@ -120,7 +141,6 @@
         .shop-title { font-weight: bold; font-size: 13px; }
         .shop-ability { font-size: 11px; color: #a0aab8; margin-top: 2px; }
 
-        /* Quest Styles */
         .quest-card {
             background: var(--panel-bg); border: 1px solid rgba(255, 255, 255, 0.15);
             border-radius: 8px; padding: 10px 12px; display: flex;
@@ -133,19 +153,18 @@
 
         .btn-small {
             background: transparent; border: 1px solid var(--neon-green);
-            color: var(--neon-green); padding: 5px 10px; border-radius: 4px;
+            color: var(--neon-green); padding: 6px 12px; border-radius: 4px;
             cursor: pointer; font-family: monospace; font-size: 11px; font-weight: bold;
         }
         .btn-small:disabled { border-color: #555; color: #555; cursor: default; }
 
         .btn {
             background: transparent; border: 2px solid var(--neon-pink);
-            color: var(--neon-pink); padding: 10px 30px; font-size: 15px;
+            color: var(--neon-pink); padding: 12px 30px; font-size: 15px;
             font-family: monospace; font-weight: bold; cursor: pointer;
             border-radius: 6px; transition: 0.2s;
             box-shadow: 0 0 10px rgba(255, 0, 85, 0.3); width: 100%;
         }
-        .btn:hover { background: var(--neon-pink); color: #fff; }
 
         .total-coins-display {
             font-family: monospace; color: var(--neon-green); font-size: 14px; margin-bottom: 10px;
@@ -174,7 +193,14 @@
         <div id="badgeTurbo" class="badge badge-turbo">⚡ TURBO</div>
     </div>
 
-    <!-- Écran Principal (Garage & Quêtes) -->
+    <!-- Contrôles Tactiles Écran -->
+    <div class="touch-controls">
+        <div class="touch-btn" id="btnLeft">◄</div>
+        <div class="touch-btn" id="btnJump">▲</div>
+        <div class="touch-btn" id="btnRight">►</div>
+    </div>
+
+    <!-- Écran Principal -->
     <div id="startScreen" class="overlay">
         <h1>Cyber Runner Pro</h1>
         <div class="brand">HABA TECHNOLOGIE</div>
@@ -210,7 +236,6 @@
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 
-// Base de Données des Voitures
 const CARS = [
     { id: 0, name: "Cyber Runner", price: 0, filter: "none", ability: "Aucune capacité", color: "#00f3ff" },
     { id: 1, name: "Neon Interceptor", price: 100, filter: "hue-rotate(140deg) brightness(1.2)", ability: "⚡ Vitesse latérale +15%", color: "#ff0055" },
@@ -218,7 +243,6 @@ const CARS = [
     { id: 3, name: "Hyper Titan", price: 500, filter: "hue-rotate(50deg) brightness(1.3)", ability: "🛡️ Démarre avec un Bouclier", color: "#ffe600" }
 ];
 
-// Configuration des Missions
 const QUESTS_DEF = [
     { id: "c30", title: "Collector", desc: "Récolter 30 pièces en 1 partie", reward: 50, target: 30, type: "coins" },
     { id: "t45", title: "Survivant", desc: "Survivre au moins 45 secondes", reward: 75, target: 45, type: "time" },
@@ -234,7 +258,7 @@ let questState = JSON.parse(localStorage.getItem("cyber_quests_state")) || {
     s1: { done: false, claimed: false }
 };
 
-// Audio Synthétiseur
+// Audio
 const AudioCtx = window.AudioContext || window.webkitAudioContext;
 let audioCtx = null;
 let musicMuted = false;
@@ -260,13 +284,10 @@ function playSynthwaveNote() {
     const gain = audioCtx.createGain();
     osc.type = "sawtooth";
     osc.frequency.setValueAtTime(bassNotes[musicStep % bassNotes.length], audioCtx.currentTime);
-    
     const filter = audioCtx.createBiquadFilter();
     filter.type = "lowpass"; filter.frequency.setValueAtTime(350, audioCtx.currentTime);
-
     gain.gain.setValueAtTime(0.06, audioCtx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.12);
-
     osc.connect(filter); filter.connect(gain); gain.connect(audioCtx.destination);
     osc.start(); osc.stop(audioCtx.currentTime + 0.12);
     musicStep++;
@@ -304,7 +325,6 @@ let sessionCoins = 0, speed = 6, gameStartTime = 0, sessionDuration = 0, shieldC
 let hasShield = false, magnetTimer = 0, turboTimer = 0;
 let obstacles = [], coins = [], powerups = [], particles = [];
 
-// Onglets & Navigation
 function switchTab(tab) {
     document.getElementById("tabGarage").classList.toggle("active", tab === 'garage');
     document.getElementById("tabQuests").classList.toggle("active", tab === 'quests');
@@ -339,14 +359,9 @@ function renderQuests() {
     view.innerHTML = "";
     QUESTS_DEF.forEach(q => {
         const st = questState[q.id];
-        let btnHTML = "";
-        if (st.claimed) {
-            btnHTML = `<button class="btn-small" disabled>COMPLÉTÉ</button>`;
-        } else if (st.done) {
-            btnHTML = `<button class="btn-small" style="border-color: var(--neon-green); color: var(--neon-green);" onclick="claimQuest('${q.id}')">RÉCLAMER</button>`;
-        } else {
-            btnHTML = `<button class="btn-small" disabled>EN COURS</button>`;
-        }
+        let btnHTML = st.claimed ? `<button class="btn-small" disabled>COMPLÉTÉ</button>` :
+            (st.done ? `<button class="btn-small" style="border-color: var(--neon-green); color: var(--neon-green);" onclick="claimQuest('${q.id}')">RÉCLAMER</button>` :
+            `<button class="btn-small" disabled>EN COURS</button>`);
 
         view.innerHTML += `
             <div class="quest-card ${st.done ? 'completed' : ''}">
@@ -365,11 +380,8 @@ function updateCoinsDisplay() { document.getElementById("totalCoins").innerText 
 function claimQuest(id) {
     const q = QUESTS_DEF.find(item => item.id === id);
     if (q && questState[id].done && !questState[id].claimed) {
-        bankCoins += q.reward;
-        questState[id].claimed = true;
-        saveProgress();
-        updateCoinsDisplay();
-        renderQuests();
+        bankCoins += q.reward; questState[id].claimed = true;
+        saveProgress(); updateCoinsDisplay(); renderQuests();
         playSFX(600, 1000, "triangle", 0.3);
     }
 }
@@ -398,12 +410,51 @@ function openMenu() {
     document.getElementById("gameOverScreen").classList.add("hidden");
 }
 
-// Contrôles
+// GESTION DU TACTILE & SWIPE (MOBILE)
+let touchStartX = 0;
+let touchStartY = 0;
+
+window.addEventListener('touchstart', e => {
+    touchStartX = e.changedTouches[0].screenX;
+    touchStartY = e.changedTouches[0].screenY;
+}, { passive: false });
+
+window.addEventListener('touchend', e => {
+    if (!gameRunning) return;
+    let touchEndX = e.changedTouches[0].screenX;
+    let touchEndY = e.changedTouches[0].screenY;
+    handleGesture(touchStartX, touchStartY, touchEndX, touchEndY);
+}, { passive: false });
+
+function handleGesture(startX, startY, endX, endY) {
+    let diffX = endX - startX;
+    let diffY = endY - startY;
+
+    if (Math.abs(diffX) > Math.abs(diffY)) {
+        if (Math.abs(diffX) > 30) {
+            if (diffX > 0 && currentLane < 2) currentLane++;
+            else if (diffX < 0 && currentLane > 0) currentLane--;
+        }
+    } else {
+        if (diffY < -30 && !isJumping) triggerJump();
+    }
+}
+
+function triggerJump() {
+    if (!isJumping) { isJumping = true; jumpTimer = 0; playSFX(200, 500, "square", 0.15); }
+}
+
+// Boutons On-screen
+document.getElementById("btnLeft").addEventListener("pointerdown", (e) => { e.stopPropagation(); if (gameRunning && currentLane > 0) currentLane--; });
+document.getElementById("btnRight").addEventListener("pointerdown", (e) => { e.stopPropagation(); if (gameRunning && currentLane < 2) currentLane++; });
+document.getElementById("btnJump").addEventListener("pointerdown", (e) => { e.stopPropagation(); if (gameRunning) triggerJump(); });
+
+// Clavier PC
 window.addEventListener("keydown", e => {
     if (!gameRunning) return;
     if ((e.code === "ArrowLeft" || e.code === "KeyA") && currentLane > 0) currentLane--;
     if ((e.code === "ArrowRight" || e.code === "KeyD") && currentLane < 2) currentLane++;
-    if (e.code === "Space" && !isJumping) { isJumping = true; jumpTimer = 0; playSFX(200, 500, "square", 0.15); }
+    if (e.code === "Space") triggerJump();
 });
 
 function startGame() {
@@ -458,7 +509,6 @@ function update() {
         if (jumpTimer >= Math.PI) { isJumping = false; jumpHeight = 0; }
     }
 
-    // Spawns
     if (Math.random() < 0.035) obstacles.push({ lane: Math.floor(Math.random() * 3), y: -80 });
     if (Math.random() < 0.03) coins.push({ lane: Math.floor(Math.random() * 3), y: -60 });
     if (Math.random() < 0.008) {
@@ -466,7 +516,6 @@ function update() {
         powerups.push({ lane: Math.floor(Math.random() * 3), y: -60, type: types[Math.floor(Math.random() * types.length)] });
     }
 
-    // Updates Objets
     for (let i = obstacles.length - 1; i >= 0; i--) {
         let obs = obstacles[i]; obs.y += currentSpeed;
         if (Math.abs(playerX - lanes[obs.lane]) < 35 && Math.abs(playerY - obs.y) < 50) {
@@ -506,13 +555,11 @@ function update() {
 
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    // Sol & Voies
     ctx.strokeStyle = "rgba(0, 243, 255, 0.15)";
     for (let y = (score * 3) % 40; y < canvas.height; y += 40) {
         ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
     }
 
-    // Powerups & Objets
     coins.forEach(c => ctx.drawImage(coinImg, lanes[c.lane] - 15, c.y - 15, 30, 30));
     powerups.forEach(p => {
         ctx.font = "20px sans-serif"; ctx.textAlign = "center";
@@ -520,7 +567,6 @@ function draw() {
     });
     obstacles.forEach(obs => ctx.drawImage(obstacleImg, lanes[obs.lane] - 25, obs.y - 40, 50, 80));
 
-    // Joueur
     ctx.save(); ctx.translate(playerX, playerY - jumpHeight);
     ctx.filter = CARS[equippedCar].filter;
     ctx.drawImage(playerImg, -22, -40, 44, 80);
@@ -536,12 +582,9 @@ function checkQuests() {
 function gameOver() {
     gameRunning = false; stopMusic(); playSFX(100, 30, "sawtooth", 0.4);
     sessionDuration = Math.floor((Date.now() - gameStartTime) / 1000);
-
     let finalScoreNum = Math.floor(score / 10);
     bankCoins += sessionCoins;
-    
-    checkQuests();
-    saveProgress();
+    checkQuests(); saveProgress();
 
     if (finalScoreNum > highScore) { highScore = finalScoreNum; localStorage.setItem("cyber_runner_hs", highScore); }
 
@@ -552,1131 +595,7 @@ function gameOver() {
     document.getElementById("gameOverScreen").classList.remove("hidden");
 }
 
-function loop() {
-    if (gameRunning) { update(); draw(); requestAnimationFrame(loop); }
-}
-
-openMenu();
-</script>
-</body>
-</html><!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>CYBER RUNNER PRO - Daily Quests Edition</title>
-    <style>
-        :root {
-            --bg: #03050c;
-            --neon-blue: #00f3ff;
-            --neon-pink: #ff0055;
-            --neon-yellow: #ffe600;
-            --neon-green: #00ff66;
-            --panel-bg: rgba(10, 15, 28, 0.94);
-        }
-
-        * { box-sizing: border-box; user-select: none; touch-action: none; }
-
-        body {
-            margin: 0; padding: 0;
-            background-color: var(--bg); color: #fff;
-            font-family: 'Segoe UI', Roboto, sans-serif;
-            display: flex; align-items: center; justify-content: center;
-            min-height: 100vh; overflow: hidden;
-        }
-
-        #game-container {
-            position: relative;
-            box-shadow: 0 0 50px rgba(0, 243, 255, 0.3);
-            border-radius: 12px; overflow: hidden;
-            border: 2px solid rgba(0, 243, 255, 0.5);
-            width: 450px; height: 680px;
-            max-width: 100vw; max-height: 100vh;
-        }
-
-        canvas { display: block; background: #050714; }
-
-        .hud {
-            position: absolute; top: 15px; left: 15px; right: 15px;
-            display: flex; justify-content: space-between; align-items: center;
-            font-family: monospace; font-size: 13px; font-weight: bold;
-            z-index: 5; pointer-events: none;
-        }
-
-        .hud-card {
-            background: var(--panel-bg); padding: 8px 12px; border-radius: 6px;
-            border: 1px solid rgba(0, 243, 255, 0.3);
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-        }
-
-        .powerup-status {
-            position: absolute; top: 60px; left: 15px;
-            display: flex; flex-direction: column; gap: 6px; z-index: 5;
-            font-family: monospace; font-size: 11px; pointer-events: none;
-        }
-
-        .badge {
-            background: var(--panel-bg); padding: 5px 10px; border-radius: 4px;
-            font-weight: bold; border: 1px solid; display: none;
-        }
-
-        .badge.active { display: block; }
-        .badge-shield { border-color: var(--neon-blue); color: var(--neon-blue); }
-        .badge-magnet { border-color: var(--neon-pink); color: var(--neon-pink); }
-        .badge-turbo { border-color: var(--neon-yellow); color: var(--neon-yellow); }
-
-        .music-btn {
-            background: var(--panel-bg); border: 1px solid rgba(0, 243, 255, 0.4);
-            color: var(--neon-blue); padding: 8px 12px; border-radius: 6px;
-            cursor: pointer; font-family: monospace; font-size: 12px; font-weight: bold;
-            pointer-events: auto;
-        }
-
-        .overlay {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(3, 5, 12, 0.95);
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            z-index: 10; padding: 20px;
-        }
-
-        h1 {
-            font-size: 24px; color: var(--neon-blue); margin: 0 0 2px 0;
-            text-transform: uppercase; letter-spacing: 2px;
-            text-shadow: 0 0 15px var(--neon-blue);
-        }
-
-        .brand {
-            color: var(--neon-yellow); font-family: monospace; font-size: 11px;
-            letter-spacing: 2px; margin-bottom: 12px;
-        }
-
-        .tabs {
-            display: flex; gap: 10px; margin-bottom: 12px; width: 100%;
-        }
-
-        .tab-btn {
-            flex: 1; background: var(--panel-bg); border: 1px solid rgba(255,255,255,0.2);
-            color: #fff; padding: 8px; font-family: monospace; font-size: 12px;
-            cursor: pointer; border-radius: 6px; text-align: center;
-        }
-
-        .tab-btn.active {
-            border-color: var(--neon-blue); color: var(--neon-blue);
-            box-shadow: 0 0 8px rgba(0, 243, 255, 0.3);
-        }
-
-        .content-container {
-            width: 100%; display: flex; flex-direction: column; gap: 10px;
-            margin-bottom: 15px; height: 310px; overflow-y: auto; padding-right: 5px;
-        }
-
-        /* Shop Styles */
-        .shop-item {
-            background: var(--panel-bg); border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 8px; padding: 10px; display: flex; align-items: center; gap: 12px;
-        }
-        .shop-item.active { border-color: var(--neon-blue); }
-        .shop-item img { width: 35px; height: 55px; object-fit: contain; }
-        .shop-info { flex-grow: 1; }
-        .shop-title { font-weight: bold; font-size: 13px; }
-        .shop-ability { font-size: 11px; color: #a0aab8; margin-top: 2px; }
-
-        /* Quest Styles */
-        .quest-card {
-            background: var(--panel-bg); border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 8px; padding: 10px 12px; display: flex;
-            justify-content: space-between; align-items: center;
-        }
-        .quest-card.completed { border-color: var(--neon-green); }
-        .quest-title { font-size: 12px; font-weight: bold; margin-bottom: 4px; }
-        .quest-desc { font-size: 11px; color: #a0aab8; }
-        .quest-reward { color: var(--neon-yellow); font-family: monospace; font-size: 11px; }
-
-        .btn-small {
-            background: transparent; border: 1px solid var(--neon-green);
-            color: var(--neon-green); padding: 5px 10px; border-radius: 4px;
-            cursor: pointer; font-family: monospace; font-size: 11px; font-weight: bold;
-        }
-        .btn-small:disabled { border-color: #555; color: #555; cursor: default; }
-
-        .btn {
-            background: transparent; border: 2px solid var(--neon-pink);
-            color: var(--neon-pink); padding: 10px 30px; font-size: 15px;
-            font-family: monospace; font-weight: bold; cursor: pointer;
-            border-radius: 6px; transition: 0.2s;
-            box-shadow: 0 0 10px rgba(255, 0, 85, 0.3); width: 100%;
-        }
-        .btn:hover { background: var(--neon-pink); color: #fff; }
-
-        .total-coins-display {
-            font-family: monospace; color: var(--neon-green); font-size: 14px; margin-bottom: 10px;
-        }
-
-        .hidden { display: none !important; }
-    </style>
-</head>
-<body>
-
-<div id="game-container">
-    <canvas id="canvas" width="450" height="680"></canvas>
-
-    <div class="hud">
-        <div class="hud-card">
-            SCORE: <span id="score" style="color: var(--neon-blue);">0</span>
-            <span id="multiplier" style="color: var(--neon-yellow);">x1</span>
-        </div>
-        <div class="hud-card">PIÈCES: <span id="coins" style="color: var(--neon-green);">0</span></div>
-        <button class="music-btn" id="musicToggleBtn" onclick="toggleMusic()">🔊 AUDIO</button>
-    </div>
-
-    <div class="powerup-status">
-        <div id="badgeShield" class="badge badge-shield">🛡️ BOUCLIER</div>
-        <div id="badgeMagnet" class="badge badge-magnet">🧲 AIMANT</div>
-        <div id="badgeTurbo" class="badge badge-turbo">⚡ TURBO</div>
-    </div>
-
-    <!-- Écran Principal (Garage & Quêtes) -->
-    <div id="startScreen" class="overlay">
-        <h1>Cyber Runner Pro</h1>
-        <div class="brand">HABA TECHNOLOGIE</div>
-
-        <div class="total-coins-display">💰 SOLDE : <span id="totalCoins">0</span> PIÈCES</div>
-
-        <div class="tabs">
-            <button class="tab-btn active" id="tabGarage" onclick="switchTab('garage')">🚗 GARAGE</button>
-            <button class="tab-btn" id="tabQuests" onclick="switchTab('quests')">🎯 MISSIONS</button>
-        </div>
-
-        <div class="content-container" id="garageView"></div>
-        <div class="content-container hidden" id="questsView"></div>
-
-        <button class="btn" onclick="startGame()">LANCER LA COURSE</button>
-    </div>
-
-    <!-- Écran Game Over -->
-    <div id="gameOverScreen" class="overlay hidden">
-        <h1 style="color: var(--neon-pink);">CRASH DÉTECTÉ</h1>
-        <div class="brand">HABA TECHNOLOGIE</div>
-        <p style="color: #a0aab8; text-align: center; line-height: 1.8;">
-            Score Session : <b id="finalScore" style="color: #fff">0</b><br>
-            Pièces Gagnées : <b id="gainedCoins" style="color: var(--neon-green)">0</b><br>
-            Temps de Survie : <b id="survivedTime" style="color: var(--neon-blue)">0</b>s<br>
-            Record : <b id="bestScore" style="color: var(--neon-yellow)">0</b>
-        </p>
-        <button class="btn" onclick="openMenu()">MENUS / GARAGE</button>
-    </div>
-</div>
-
-<script>
-const canvas = document.getElementById("canvas");
-const ctx = canvas.getContext("2d");
-
-// Base de Données des Voitures
-const CARS = [
-    { id: 0, name: "Cyber Runner", price: 0, filter: "none", ability: "Aucune capacité", color: "#00f3ff" },
-    { id: 1, name: "Neon Interceptor", price: 100, filter: "hue-rotate(140deg) brightness(1.2)", ability: "⚡ Vitesse latérale +15%", color: "#ff0055" },
-    { id: 2, name: "Phantom Glider", price: 250, filter: "hue-rotate(260deg) brightness(1.2)", ability: "🧲 Aimant passif permanent", color: "#00ff66" },
-    { id: 3, name: "Hyper Titan", price: 500, filter: "hue-rotate(50deg) brightness(1.3)", ability: "🛡️ Démarre avec un Bouclier", color: "#ffe600" }
-];
-
-// Configuration des Missions
-const QUESTS_DEF = [
-    { id: "c30", title: "Collector", desc: "Récolter 30 pièces en 1 partie", reward: 50, target: 30, type: "coins" },
-    { id: "t45", title: "Survivant", desc: "Survivre au moins 45 secondes", reward: 75, target: 45, type: "time" },
-    { id: "s1", title: "Invincible", desc: "Obtenir 1 Bouclier en partie", reward: 40, target: 1, type: "shield" }
-];
-
-let bankCoins = parseInt(localStorage.getItem("cyber_bank_coins")) || 0;
-let unlockedCars = JSON.parse(localStorage.getItem("cyber_unlocked_cars")) || [0];
-let equippedCar = parseInt(localStorage.getItem("cyber_equipped_car")) || 0;
-let questState = JSON.parse(localStorage.getItem("cyber_quests_state")) || {
-    c30: { done: false, claimed: false },
-    t45: { done: false, claimed: false },
-    s1: { done: false, claimed: false }
-};
-
-// Audio Synthétiseur
-const AudioCtx = window.AudioContext || window.webkitAudioContext;
-let audioCtx = null;
-let musicMuted = false;
-let musicInterval = null;
-let musicStep = 0;
-
-function initAudio() {
-    if (!audioCtx) audioCtx = new AudioCtx();
-    if (audioCtx.state === 'suspended') audioCtx.resume();
-}
-
-function toggleMusic() {
-    musicMuted = !musicMuted;
-    document.getElementById("musicToggleBtn").innerText = musicMuted ? "🔇 AUDIO" : "🔊 AUDIO";
-    if (musicMuted) stopMusic();
-    else if (gameRunning) startMusic();
-}
-
-function playSynthwaveNote() {
-    if (!audioCtx || musicMuted || !gameRunning) return;
-    const bassNotes = [110, 110, 130.81, 110, 146.83, 110, 130.81, 98.00];
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.type = "sawtooth";
-    osc.frequency.setValueAtTime(bassNotes[musicStep % bassNotes.length], audioCtx.currentTime);
-    
-    const filter = audioCtx.createBiquadFilter();
-    filter.type = "lowpass"; filter.frequency.setValueAtTime(350, audioCtx.currentTime);
-
-    gain.gain.setValueAtTime(0.06, audioCtx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.12);
-
-    osc.connect(filter); filter.connect(gain); gain.connect(audioCtx.destination);
-    osc.start(); osc.stop(audioCtx.currentTime + 0.12);
-    musicStep++;
-}
-
-function startMusic() { stopMusic(); musicStep = 0; if (!musicMuted) musicInterval = setInterval(playSynthwaveNote, 120); }
-function stopMusic() { if (musicInterval) { clearInterval(musicInterval); musicInterval = null; } }
-
-function playSFX(freq1, freq2, type="sine", duration=0.2) {
-    if (!audioCtx || musicMuted) return;
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.type = type;
-    osc.frequency.setValueAtTime(freq1, audioCtx.currentTime);
-    if (freq2) osc.frequency.exponentialRampToValueAtTime(freq2, audioCtx.currentTime + duration);
-    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
-    osc.connect(gain); gain.connect(audioCtx.destination);
-    osc.start(); osc.stop(audioCtx.currentTime + duration);
-}
-
-// Images
-const playerImg = new Image(); playerImg.src = 'https://svgsilh.com/svg/155823.svg';
-const obstacleImg = new Image(); obstacleImg.src = 'https://svgsilh.com/svg/309878.svg';
-const coinImg = new Image(); coinImg.src = 'https://svgsilh.com/svg/1314467.svg';
-
-const lanes = [90, 225, 360];
-let currentLane = 1;
-let playerX = lanes[1], playerY = 550;
-
-let isJumping = false, jumpHeight = 0, jumpTimer = 0;
-let gameRunning = false, score = 0, multiplier = 1, highScore = localStorage.getItem("cyber_runner_hs") || 0;
-let sessionCoins = 0, speed = 6, gameStartTime = 0, sessionDuration = 0, shieldCollectedInSession = false;
-
-let hasShield = false, magnetTimer = 0, turboTimer = 0;
-let obstacles = [], coins = [], powerups = [], particles = [];
-
-// Onglets & Navigation
-function switchTab(tab) {
-    document.getElementById("tabGarage").classList.toggle("active", tab === 'garage');
-    document.getElementById("tabQuests").classList.toggle("active", tab === 'quests');
-    document.getElementById("garageView").classList.toggle("hidden", tab !== 'garage');
-    document.getElementById("questsView").classList.toggle("hidden", tab !== 'quests');
-}
-
-function renderGarage() {
-    const view = document.getElementById("garageView");
-    view.innerHTML = "";
-    CARS.forEach(car => {
-        const isUnlocked = unlockedCars.includes(car.id);
-        const isEquipped = equippedCar === car.id;
-        let btnHTML = isEquipped ? `<button class="btn-small" style="border-color: var(--neon-blue); color: var(--neon-blue);">ÉQUIPÉ</button>` :
-            (isUnlocked ? `<button class="btn-small" onclick="equipCar(${car.id})">CHOISIR</button>` :
-            `<button class="btn-small" style="border-color: var(--neon-yellow); color: var(--neon-yellow);" onclick="buyCar(${car.id})">${car.price} 💰</button>`);
-
-        view.innerHTML += `
-            <div class="shop-item ${isEquipped ? 'active' : ''}">
-                <img src="${playerImg.src}" style="filter: ${car.filter};" alt="${car.name}">
-                <div class="shop-info">
-                    <div class="shop-title" style="color: ${car.color}">${car.name}</div>
-                    <div class="shop-ability">${car.ability}</div>
-                </div>
-                ${btnHTML}
-            </div>`;
-    });
-}
-
-function renderQuests() {
-    const view = document.getElementById("questsView");
-    view.innerHTML = "";
-    QUESTS_DEF.forEach(q => {
-        const st = questState[q.id];
-        let btnHTML = "";
-        if (st.claimed) {
-            btnHTML = `<button class="btn-small" disabled>COMPLÉTÉ</button>`;
-        } else if (st.done) {
-            btnHTML = `<button class="btn-small" style="border-color: var(--neon-green); color: var(--neon-green);" onclick="claimQuest('${q.id}')">RÉCLAMER</button>`;
-        } else {
-            btnHTML = `<button class="btn-small" disabled>EN COURS</button>`;
-        }
-
-        view.innerHTML += `
-            <div class="quest-card ${st.done ? 'completed' : ''}">
-                <div>
-                    <div class="quest-title">${q.title}</div>
-                    <div class="quest-desc">${q.desc}</div>
-                    <div class="quest-reward">+${q.reward} PIÈCES</div>
-                </div>
-                ${btnHTML}
-            </div>`;
-    });
-}
-
-function updateCoinsDisplay() { document.getElementById("totalCoins").innerText = bankCoins; }
-
-function claimQuest(id) {
-    const q = QUESTS_DEF.find(item => item.id === id);
-    if (q && questState[id].done && !questState[id].claimed) {
-        bankCoins += q.reward;
-        questState[id].claimed = true;
-        saveProgress();
-        updateCoinsDisplay();
-        renderQuests();
-        playSFX(600, 1000, "triangle", 0.3);
-    }
-}
-
-function buyCar(id) {
-    const car = CARS[id];
-    if (bankCoins >= car.price) {
-        bankCoins -= car.price; unlockedCars.push(id); equippedCar = id;
-        saveProgress(); updateCoinsDisplay(); renderGarage();
-        playSFX(400, 800, "triangle", 0.3);
-    }
-}
-
-function equipCar(id) { equippedCar = id; saveProgress(); renderGarage(); playSFX(500, 700, "sine", 0.15); }
-
-function saveProgress() {
-    localStorage.setItem("cyber_bank_coins", bankCoins);
-    localStorage.setItem("cyber_unlocked_cars", JSON.stringify(unlockedCars));
-    localStorage.setItem("cyber_equipped_car", equippedCar);
-    localStorage.setItem("cyber_quests_state", JSON.stringify(questState));
-}
-
-function openMenu() {
-    updateCoinsDisplay(); renderGarage(); renderQuests();
-    document.getElementById("startScreen").classList.remove("hidden");
-    document.getElementById("gameOverScreen").classList.add("hidden");
-}
-
-// Contrôles
-window.addEventListener("keydown", e => {
-    if (!gameRunning) return;
-    if ((e.code === "ArrowLeft" || e.code === "KeyA") && currentLane > 0) currentLane--;
-    if ((e.code === "ArrowRight" || e.code === "KeyD") && currentLane < 2) currentLane++;
-    if (e.code === "Space" && !isJumping) { isJumping = true; jumpTimer = 0; playSFX(200, 500, "square", 0.15); }
-});
-
-function startGame() {
-    initAudio();
-    document.getElementById("startScreen").classList.add("hidden");
-    document.getElementById("gameOverScreen").classList.add("hidden");
-
-    currentLane = 1; playerX = lanes[1]; playerY = 550;
-    score = 0; multiplier = 1; sessionCoins = 0; speed = 6;
-    isJumping = false; jumpHeight = 0; magnetTimer = 0; turboTimer = 0;
-    gameStartTime = Date.now(); shieldCollectedInSession = false;
-
-    hasShield = (equippedCar === 3);
-    obstacles = []; coins = []; powerups = []; particles = [];
-    gameRunning = true;
-
-    updateUI(); startMusic(); loop();
-}
-
-function spawnParticles(x, y, color) {
-    for (let i = 0; i < 8; i++) {
-        particles.push({ x: x, y: y, vx: (Math.random() - 0.5) * 6, vy: (Math.random() - 0.5) * 6, life: 20, color: color });
-    }
-}
-
-function updateUI() {
-    document.getElementById("badgeShield").classList.toggle("active", hasShield);
-    document.getElementById("badgeMagnet").classList.toggle("active", magnetTimer > 0 || equippedCar === 2);
-    document.getElementById("badgeTurbo").classList.toggle("active", turboTimer > 0);
-    document.getElementById("multiplier").innerText = `x${multiplier}`;
-}
-
-function update() {
-    if (!gameRunning) return;
-
-    let currentSpeed = turboTimer > 0 ? speed * 1.8 : speed;
-    score += multiplier; speed += 0.001;
-
-    if (magnetTimer > 0) magnetTimer--;
-    if (turboTimer > 0) turboTimer--;
-    updateUI();
-
-    document.getElementById("score").innerText = Math.floor(score / 10);
-    document.getElementById("coins").innerText = sessionCoins;
-
-    let moveSpeed = equippedCar === 1 ? 0.35 : 0.25;
-    playerX += (lanes[currentLane] - playerX) * moveSpeed;
-
-    if (isJumping) {
-        jumpTimer += 0.07;
-        jumpHeight = Math.sin(jumpTimer) * 55;
-        if (jumpTimer >= Math.PI) { isJumping = false; jumpHeight = 0; }
-    }
-
-    // Spawns
-    if (Math.random() < 0.035) obstacles.push({ lane: Math.floor(Math.random() * 3), y: -80 });
-    if (Math.random() < 0.03) coins.push({ lane: Math.floor(Math.random() * 3), y: -60 });
-    if (Math.random() < 0.008) {
-        let types = ['shield', 'magnet', 'turbo'];
-        powerups.push({ lane: Math.floor(Math.random() * 3), y: -60, type: types[Math.floor(Math.random() * types.length)] });
-    }
-
-    // Updates Objets
-    for (let i = obstacles.length - 1; i >= 0; i--) {
-        let obs = obstacles[i]; obs.y += currentSpeed;
-        if (Math.abs(playerX - lanes[obs.lane]) < 35 && Math.abs(playerY - obs.y) < 50) {
-            if (turboTimer > 0) { spawnParticles(lanes[obs.lane], obs.y, "#ff0055"); obstacles.splice(i, 1); }
-            else if (!isJumping || jumpHeight < 30) {
-                if (hasShield) { hasShield = false; multiplier = 1; obstacles.splice(i, 1); }
-                else { gameOver(); }
-            }
-        } else if (obs.y > canvas.height + 80) obstacles.splice(i, 1);
-    }
-
-    for (let i = powerups.length - 1; i >= 0; i--) {
-        let p = powerups[i]; p.y += currentSpeed;
-        if (Math.abs(playerX - lanes[p.lane]) < 35 && Math.abs(playerY - p.y) < 35) {
-            if (p.type === 'shield') { hasShield = true; shieldCollectedInSession = true; }
-            if (p.type === 'magnet') magnetTimer = 360;
-            if (p.type === 'turbo') turboTimer = 180;
-            spawnParticles(lanes[p.lane], p.y, "#ffe600"); playSFX(400, 800, "triangle", 0.25);
-            powerups.splice(i, 1);
-        } else if (p.y > canvas.height + 40) powerups.splice(i, 1);
-    }
-
-    let hasActiveMagnet = magnetTimer > 0 || equippedCar === 2;
-    for (let i = coins.length - 1; i >= 0; i--) {
-        let c = coins[i]; c.y += currentSpeed;
-        if (hasActiveMagnet && Math.sqrt(Math.pow(playerX - lanes[c.lane], 2) + Math.pow(playerY - c.y, 2)) < 150) {
-            lanes[c.lane] += (playerX - lanes[c.lane]) * 0.12;
-            c.y += (playerY - c.y) * 0.12;
-        }
-        if (Math.abs(playerX - lanes[c.lane]) < 30 && Math.abs(playerY - c.y) < 35) {
-            sessionCoins++;
-            if (sessionCoins % 10 === 0 && multiplier < 5) multiplier++;
-            playSFX(900, 1200, "sine", 0.15); coins.splice(i, 1);
-        } else if (c.y > canvas.height + 40) coins.splice(i, 1);
-    }
-}
-
-function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    // Sol & Voies
-    ctx.strokeStyle = "rgba(0, 243, 255, 0.15)";
-    for (let y = (score * 3) % 40; y < canvas.height; y += 40) {
-        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
-    }
-
-    // Powerups & Objets
-    coins.forEach(c => ctx.drawImage(coinImg, lanes[c.lane] - 15, c.y - 15, 30, 30));
-    powerups.forEach(p => {
-        ctx.font = "20px sans-serif"; ctx.textAlign = "center";
-        ctx.fillText(p.type === 'shield' ? "🛡️" : (p.type === 'magnet' ? "🧲" : "⚡"), lanes[p.lane], p.y);
-    });
-    obstacles.forEach(obs => ctx.drawImage(obstacleImg, lanes[obs.lane] - 25, obs.y - 40, 50, 80));
-
-    // Joueur
-    ctx.save(); ctx.translate(playerX, playerY - jumpHeight);
-    ctx.filter = CARS[equippedCar].filter;
-    ctx.drawImage(playerImg, -22, -40, 44, 80);
-    ctx.restore();
-}
-
-function checkQuests() {
-    if (sessionCoins >= 30) questState.c30.done = true;
-    if (sessionDuration >= 45) questState.t45.done = true;
-    if (shieldCollectedInSession) questState.s1.done = true;
-}
-
-function gameOver() {
-    gameRunning = false; stopMusic(); playSFX(100, 30, "sawtooth", 0.4);
-    sessionDuration = Math.floor((Date.now() - gameStartTime) / 1000);
-
-    let finalScoreNum = Math.floor(score / 10);
-    bankCoins += sessionCoins;
-    
-    checkQuests();
-    saveProgress();
-
-    if (finalScoreNum > highScore) { highScore = finalScoreNum; localStorage.setItem("cyber_runner_hs", highScore); }
-
-    document.getElementById("finalScore").innerText = finalScoreNum;
-    document.getElementById("gainedCoins").innerText = sessionCoins;
-    document.getElementById("survivedTime").innerText = sessionDuration;
-    document.getElementById("bestScore").innerText = highScore;
-    document.getElementById("gameOverScreen").classList.remove("hidden");
-}
-
-function loop() {
-    if (gameRunning) { update(); draw(); requestAnimationFrame(loop); }
-}
-
-openMenu();
-</script>
-</body>
-</html><!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>CYBER RUNNER PRO - Daily Quests Edition</title>
-    <style>
-        :root {
-            --bg: #03050c;
-            --neon-blue: #00f3ff;
-            --neon-pink: #ff0055;
-            --neon-yellow: #ffe600;
-            --neon-green: #00ff66;
-            --panel-bg: rgba(10, 15, 28, 0.94);
-        }
-
-        * { box-sizing: border-box; user-select: none; touch-action: none; }
-
-        body {
-            margin: 0; padding: 0;
-            background-color: var(--bg); color: #fff;
-            font-family: 'Segoe UI', Roboto, sans-serif;
-            display: flex; align-items: center; justify-content: center;
-            min-height: 100vh; overflow: hidden;
-        }
-
-        #game-container {
-            position: relative;
-            box-shadow: 0 0 50px rgba(0, 243, 255, 0.3);
-            border-radius: 12px; overflow: hidden;
-            border: 2px solid rgba(0, 243, 255, 0.5);
-            width: 450px; height: 680px;
-            max-width: 100vw; max-height: 100vh;
-        }
-
-        canvas { display: block; background: #050714; }
-
-        .hud {
-            position: absolute; top: 15px; left: 15px; right: 15px;
-            display: flex; justify-content: space-between; align-items: center;
-            font-family: monospace; font-size: 13px; font-weight: bold;
-            z-index: 5; pointer-events: none;
-        }
-
-        .hud-card {
-            background: var(--panel-bg); padding: 8px 12px; border-radius: 6px;
-            border: 1px solid rgba(0, 243, 255, 0.3);
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-        }
-
-        .powerup-status {
-            position: absolute; top: 60px; left: 15px;
-            display: flex; flex-direction: column; gap: 6px; z-index: 5;
-            font-family: monospace; font-size: 11px; pointer-events: none;
-        }
-
-        .badge {
-            background: var(--panel-bg); padding: 5px 10px; border-radius: 4px;
-            font-weight: bold; border: 1px solid; display: none;
-        }
-
-        .badge.active { display: block; }
-        .badge-shield { border-color: var(--neon-blue); color: var(--neon-blue); }
-        .badge-magnet { border-color: var(--neon-pink); color: var(--neon-pink); }
-        .badge-turbo { border-color: var(--neon-yellow); color: var(--neon-yellow); }
-
-        .music-btn {
-            background: var(--panel-bg); border: 1px solid rgba(0, 243, 255, 0.4);
-            color: var(--neon-blue); padding: 8px 12px; border-radius: 6px;
-            cursor: pointer; font-family: monospace; font-size: 12px; font-weight: bold;
-            pointer-events: auto;
-        }
-
-        .overlay {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(3, 5, 12, 0.95);
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            z-index: 10; padding: 20px;
-        }
-
-        h1 {
-            font-size: 24px; color: var(--neon-blue); margin: 0 0 2px 0;
-            text-transform: uppercase; letter-spacing: 2px;
-            text-shadow: 0 0 15px var(--neon-blue);
-        }
-
-        .brand {
-            color: var(--neon-yellow); font-family: monospace; font-size: 11px;
-            letter-spacing: 2px; margin-bottom: 12px;
-        }
-
-        .tabs {
-            display: flex; gap: 10px; margin-bottom: 12px; width: 100%;
-        }
-
-        .tab-btn {
-            flex: 1; background: var(--panel-bg); border: 1px solid rgba(255,255,255,0.2);
-            color: #fff; padding: 8px; font-family: monospace; font-size: 12px;
-            cursor: pointer; border-radius: 6px; text-align: center;
-        }
-
-        .tab-btn.active {
-            border-color: var(--neon-blue); color: var(--neon-blue);
-            box-shadow: 0 0 8px rgba(0, 243, 255, 0.3);
-        }
-
-        .content-container {
-            width: 100%; display: flex; flex-direction: column; gap: 10px;
-            margin-bottom: 15px; height: 310px; overflow-y: auto; padding-right: 5px;
-        }
-
-        /* Shop Styles */
-        .shop-item {
-            background: var(--panel-bg); border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 8px; padding: 10px; display: flex; align-items: center; gap: 12px;
-        }
-        .shop-item.active { border-color: var(--neon-blue); }
-        .shop-item img { width: 35px; height: 55px; object-fit: contain; }
-        .shop-info { flex-grow: 1; }
-        .shop-title { font-weight: bold; font-size: 13px; }
-        .shop-ability { font-size: 11px; color: #a0aab8; margin-top: 2px; }
-
-        /* Quest Styles */
-        .quest-card {
-            background: var(--panel-bg); border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 8px; padding: 10px 12px; display: flex;
-            justify-content: space-between; align-items: center;
-        }
-        .quest-card.completed { border-color: var(--neon-green); }
-        .quest-title { font-size: 12px; font-weight: bold; margin-bottom: 4px; }
-        .quest-desc { font-size: 11px; color: #a0aab8; }
-        .quest-reward { color: var(--neon-yellow); font-family: monospace; font-size: 11px; }
-
-        .btn-small {
-            background: transparent; border: 1px solid var(--neon-green);
-            color: var(--neon-green); padding: 5px 10px; border-radius: 4px;
-            cursor: pointer; font-family: monospace; font-size: 11px; font-weight: bold;
-        }
-        .btn-small:disabled { border-color: #555; color: #555; cursor: default; }
-
-        .btn {
-            background: transparent; border: 2px solid var(--neon-pink);
-            color: var(--neon-pink); padding: 10px 30px; font-size: 15px;
-            font-family: monospace; font-weight: bold; cursor: pointer;
-            border-radius: 6px; transition: 0.2s;
-            box-shadow: 0 0 10px rgba(255, 0, 85, 0.3); width: 100%;
-        }
-        .btn:hover { background: var(--neon-pink); color: #fff; }
-
-        .total-coins-display {
-            font-family: monospace; color: var(--neon-green); font-size: 14px; margin-bottom: 10px;
-        }
-
-        .hidden { display: none !important; }
-    </style>
-</head>
-<body>
-
-<div id="game-container">
-    <canvas id="canvas" width="450" height="680"></canvas>
-
-    <div class="hud">
-        <div class="hud-card">
-            SCORE: <span id="score" style="color: var(--neon-blue);">0</span>
-            <span id="multiplier" style="color: var(--neon-yellow);">x1</span>
-        </div>
-        <div class="hud-card">PIÈCES: <span id="coins" style="color: var(--neon-green);">0</span></div>
-        <button class="music-btn" id="musicToggleBtn" onclick="toggleMusic()">🔊 AUDIO</button>
-    </div>
-
-    <div class="powerup-status">
-        <div id="badgeShield" class="badge badge-shield">🛡️ BOUCLIER</div>
-        <div id="badgeMagnet" class="badge badge-magnet">🧲 AIMANT</div>
-        <div id="badgeTurbo" class="badge badge-turbo">⚡ TURBO</div>
-    </div>
-
-    <!-- Écran Principal (Garage & Quêtes) -->
-    <div id="startScreen" class="overlay">
-        <h1>Cyber Runner Pro</h1>
-        <div class="brand">HABA TECHNOLOGIE</div>
-
-        <div class="total-coins-display">💰 SOLDE : <span id="totalCoins">0</span> PIÈCES</div>
-
-        <div class="tabs">
-            <button class="tab-btn active" id="tabGarage" onclick="switchTab('garage')">🚗 GARAGE</button>
-            <button class="tab-btn" id="tabQuests" onclick="switchTab('quests')">🎯 MISSIONS</button>
-        </div>
-
-        <div class="content-container" id="garageView"></div>
-        <div class="content-container hidden" id="questsView"></div>
-
-        <button class="btn" onclick="startGame()">LANCER LA COURSE</button>
-    </div>
-
-    <!-- Écran Game Over -->
-    <div id="gameOverScreen" class="overlay hidden">
-        <h1 style="color: var(--neon-pink);">CRASH DÉTECTÉ</h1>
-        <div class="brand">HABA TECHNOLOGIE</div>
-        <p style="color: #a0aab8; text-align: center; line-height: 1.8;">
-            Score Session : <b id="finalScore" style="color: #fff">0</b><br>
-            Pièces Gagnées : <b id="gainedCoins" style="color: var(--neon-green)">0</b><br>
-            Temps de Survie : <b id="survivedTime" style="color: var(--neon-blue)">0</b>s<br>
-            Record : <b id="bestScore" style="color: var(--neon-yellow)">0</b>
-        </p>
-        <button class="btn" onclick="openMenu()">MENUS / GARAGE</button>
-    </div>
-</div>
-
-<script>
-const canvas = document.getElementById("canvas");
-const ctx = canvas.getContext("2d");
-
-// Base de Données des Voitures
-const CARS = [
-    { id: 0, name: "Cyber Runner", price: 0, filter: "none", ability: "Aucune capacité", color: "#00f3ff" },
-    { id: 1, name: "Neon Interceptor", price: 100, filter: "hue-rotate(140deg) brightness(1.2)", ability: "⚡ Vitesse latérale +15%", color: "#ff0055" },
-    { id: 2, name: "Phantom Glider", price: 250, filter: "hue-rotate(260deg) brightness(1.2)", ability: "🧲 Aimant passif permanent", color: "#00ff66" },
-    { id: 3, name: "Hyper Titan", price: 500, filter: "hue-rotate(50deg) brightness(1.3)", ability: "🛡️ Démarre avec un Bouclier", color: "#ffe600" }
-];
-
-// Configuration des Missions
-const QUESTS_DEF = [
-    { id: "c30", title: "Collector", desc: "Récolter 30 pièces en 1 partie", reward: 50, target: 30, type: "coins" },
-    { id: "t45", title: "Survivant", desc: "Survivre au moins 45 secondes", reward: 75, target: 45, type: "time" },
-    { id: "s1", title: "Invincible", desc: "Obtenir 1 Bouclier en partie", reward: 40, target: 1, type: "shield" }
-];
-
-let bankCoins = parseInt(localStorage.getItem("cyber_bank_coins")) || 0;
-let unlockedCars = JSON.parse(localStorage.getItem("cyber_unlocked_cars")) || [0];
-let equippedCar = parseInt(localStorage.getItem("cyber_equipped_car")) || 0;
-let questState = JSON.parse(localStorage.getItem("cyber_quests_state")) || {
-    c30: { done: false, claimed: false },
-    t45: { done: false, claimed: false },
-    s1: { done: false, claimed: false }
-};
-
-// Audio Synthétiseur
-const AudioCtx = window.AudioContext || window.webkitAudioContext;
-let audioCtx = null;
-let musicMuted = false;
-let musicInterval = null;
-let musicStep = 0;
-
-function initAudio() {
-    if (!audioCtx) audioCtx = new AudioCtx();
-    if (audioCtx.state === 'suspended') audioCtx.resume();
-}
-
-function toggleMusic() {
-    musicMuted = !musicMuted;
-    document.getElementById("musicToggleBtn").innerText = musicMuted ? "🔇 AUDIO" : "🔊 AUDIO";
-    if (musicMuted) stopMusic();
-    else if (gameRunning) startMusic();
-}
-
-function playSynthwaveNote() {
-    if (!audioCtx || musicMuted || !gameRunning) return;
-    const bassNotes = [110, 110, 130.81, 110, 146.83, 110, 130.81, 98.00];
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.type = "sawtooth";
-    osc.frequency.setValueAtTime(bassNotes[musicStep % bassNotes.length], audioCtx.currentTime);
-    
-    const filter = audioCtx.createBiquadFilter();
-    filter.type = "lowpass"; filter.frequency.setValueAtTime(350, audioCtx.currentTime);
-
-    gain.gain.setValueAtTime(0.06, audioCtx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.12);
-
-    osc.connect(filter); filter.connect(gain); gain.connect(audioCtx.destination);
-    osc.start(); osc.stop(audioCtx.currentTime + 0.12);
-    musicStep++;
-}
-
-function startMusic() { stopMusic(); musicStep = 0; if (!musicMuted) musicInterval = setInterval(playSynthwaveNote, 120); }
-function stopMusic() { if (musicInterval) { clearInterval(musicInterval); musicInterval = null; } }
-
-function playSFX(freq1, freq2, type="sine", duration=0.2) {
-    if (!audioCtx || musicMuted) return;
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.type = type;
-    osc.frequency.setValueAtTime(freq1, audioCtx.currentTime);
-    if (freq2) osc.frequency.exponentialRampToValueAtTime(freq2, audioCtx.currentTime + duration);
-    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
-    osc.connect(gain); gain.connect(audioCtx.destination);
-    osc.start(); osc.stop(audioCtx.currentTime + duration);
-}
-
-// Images
-const playerImg = new Image(); playerImg.src = 'https://svgsilh.com/svg/155823.svg';
-const obstacleImg = new Image(); obstacleImg.src = 'https://svgsilh.com/svg/309878.svg';
-const coinImg = new Image(); coinImg.src = 'https://svgsilh.com/svg/1314467.svg';
-
-const lanes = [90, 225, 360];
-let currentLane = 1;
-let playerX = lanes[1], playerY = 550;
-
-let isJumping = false, jumpHeight = 0, jumpTimer = 0;
-let gameRunning = false, score = 0, multiplier = 1, highScore = localStorage.getItem("cyber_runner_hs") || 0;
-let sessionCoins = 0, speed = 6, gameStartTime = 0, sessionDuration = 0, shieldCollectedInSession = false;
-
-let hasShield = false, magnetTimer = 0, turboTimer = 0;
-let obstacles = [], coins = [], powerups = [], particles = [];
-
-// Onglets & Navigation
-function switchTab(tab) {
-    document.getElementById("tabGarage").classList.toggle("active", tab === 'garage');
-    document.getElementById("tabQuests").classList.toggle("active", tab === 'quests');
-    document.getElementById("garageView").classList.toggle("hidden", tab !== 'garage');
-    document.getElementById("questsView").classList.toggle("hidden", tab !== 'quests');
-}
-
-function renderGarage() {
-    const view = document.getElementById("garageView");
-    view.innerHTML = "";
-    CARS.forEach(car => {
-        const isUnlocked = unlockedCars.includes(car.id);
-        const isEquipped = equippedCar === car.id;
-        let btnHTML = isEquipped ? `<button class="btn-small" style="border-color: var(--neon-blue); color: var(--neon-blue);">ÉQUIPÉ</button>` :
-            (isUnlocked ? `<button class="btn-small" onclick="equipCar(${car.id})">CHOISIR</button>` :
-            `<button class="btn-small" style="border-color: var(--neon-yellow); color: var(--neon-yellow);" onclick="buyCar(${car.id})">${car.price} 💰</button>`);
-
-        view.innerHTML += `
-            <div class="shop-item ${isEquipped ? 'active' : ''}">
-                <img src="${playerImg.src}" style="filter: ${car.filter};" alt="${car.name}">
-                <div class="shop-info">
-                    <div class="shop-title" style="color: ${car.color}">${car.name}</div>
-                    <div class="shop-ability">${car.ability}</div>
-                </div>
-                ${btnHTML}
-            </div>`;
-    });
-}
-
-function renderQuests() {
-    const view = document.getElementById("questsView");
-    view.innerHTML = "";
-    QUESTS_DEF.forEach(q => {
-        const st = questState[q.id];
-        let btnHTML = "";
-        if (st.claimed) {
-            btnHTML = `<button class="btn-small" disabled>COMPLÉTÉ</button>`;
-        } else if (st.done) {
-            btnHTML = `<button class="btn-small" style="border-color: var(--neon-green); color: var(--neon-green);" onclick="claimQuest('${q.id}')">RÉCLAMER</button>`;
-        } else {
-            btnHTML = `<button class="btn-small" disabled>EN COURS</button>`;
-        }
-
-        view.innerHTML += `
-            <div class="quest-card ${st.done ? 'completed' : ''}">
-                <div>
-                    <div class="quest-title">${q.title}</div>
-                    <div class="quest-desc">${q.desc}</div>
-                    <div class="quest-reward">+${q.reward} PIÈCES</div>
-                </div>
-                ${btnHTML}
-            </div>`;
-    });
-}
-
-function updateCoinsDisplay() { document.getElementById("totalCoins").innerText = bankCoins; }
-
-function claimQuest(id) {
-    const q = QUESTS_DEF.find(item => item.id === id);
-    if (q && questState[id].done && !questState[id].claimed) {
-        bankCoins += q.reward;
-        questState[id].claimed = true;
-        saveProgress();
-        updateCoinsDisplay();
-        renderQuests();
-        playSFX(600, 1000, "triangle", 0.3);
-    }
-}
-
-function buyCar(id) {
-    const car = CARS[id];
-    if (bankCoins >= car.price) {
-        bankCoins -= car.price; unlockedCars.push(id); equippedCar = id;
-        saveProgress(); updateCoinsDisplay(); renderGarage();
-        playSFX(400, 800, "triangle", 0.3);
-    }
-}
-
-function equipCar(id) { equippedCar = id; saveProgress(); renderGarage(); playSFX(500, 700, "sine", 0.15); }
-
-function saveProgress() {
-    localStorage.setItem("cyber_bank_coins", bankCoins);
-    localStorage.setItem("cyber_unlocked_cars", JSON.stringify(unlockedCars));
-    localStorage.setItem("cyber_equipped_car", equippedCar);
-    localStorage.setItem("cyber_quests_state", JSON.stringify(questState));
-}
-
-function openMenu() {
-    updateCoinsDisplay(); renderGarage(); renderQuests();
-    document.getElementById("startScreen").classList.remove("hidden");
-    document.getElementById("gameOverScreen").classList.add("hidden");
-}
-
-// Contrôles
-window.addEventListener("keydown", e => {
-    if (!gameRunning) return;
-    if ((e.code === "ArrowLeft" || e.code === "KeyA") && currentLane > 0) currentLane--;
-    if ((e.code === "ArrowRight" || e.code === "KeyD") && currentLane < 2) currentLane++;
-    if (e.code === "Space" && !isJumping) { isJumping = true; jumpTimer = 0; playSFX(200, 500, "square", 0.15); }
-});
-
-function startGame() {
-    initAudio();
-    document.getElementById("startScreen").classList.add("hidden");
-    document.getElementById("gameOverScreen").classList.add("hidden");
-
-    currentLane = 1; playerX = lanes[1]; playerY = 550;
-    score = 0; multiplier = 1; sessionCoins = 0; speed = 6;
-    isJumping = false; jumpHeight = 0; magnetTimer = 0; turboTimer = 0;
-    gameStartTime = Date.now(); shieldCollectedInSession = false;
-
-    hasShield = (equippedCar === 3);
-    obstacles = []; coins = []; powerups = []; particles = [];
-    gameRunning = true;
-
-    updateUI(); startMusic(); loop();
-}
-
-function spawnParticles(x, y, color) {
-    for (let i = 0; i < 8; i++) {
-        particles.push({ x: x, y: y, vx: (Math.random() - 0.5) * 6, vy: (Math.random() - 0.5) * 6, life: 20, color: color });
-    }
-}
-
-function updateUI() {
-    document.getElementById("badgeShield").classList.toggle("active", hasShield);
-    document.getElementById("badgeMagnet").classList.toggle("active", magnetTimer > 0 || equippedCar === 2);
-    document.getElementById("badgeTurbo").classList.toggle("active", turboTimer > 0);
-    document.getElementById("multiplier").innerText = `x${multiplier}`;
-}
-
-function update() {
-    if (!gameRunning) return;
-
-    let currentSpeed = turboTimer > 0 ? speed * 1.8 : speed;
-    score += multiplier; speed += 0.001;
-
-    if (magnetTimer > 0) magnetTimer--;
-    if (turboTimer > 0) turboTimer--;
-    updateUI();
-
-    document.getElementById("score").innerText = Math.floor(score / 10);
-    document.getElementById("coins").innerText = sessionCoins;
-
-    let moveSpeed = equippedCar === 1 ? 0.35 : 0.25;
-    playerX += (lanes[currentLane] - playerX) * moveSpeed;
-
-    if (isJumping) {
-        jumpTimer += 0.07;
-        jumpHeight = Math.sin(jumpTimer) * 55;
-        if (jumpTimer >= Math.PI) { isJumping = false; jumpHeight = 0; }
-    }
-
-    // Spawns
-    if (Math.random() < 0.035) obstacles.push({ lane: Math.floor(Math.random() * 3), y: -80 });
-    if (Math.random() < 0.03) coins.push({ lane: Math.floor(Math.random() * 3), y: -60 });
-    if (Math.random() < 0.008) {
-        let types = ['shield', 'magnet', 'turbo'];
-        powerups.push({ lane: Math.floor(Math.random() * 3), y: -60, type: types[Math.floor(Math.random() * types.length)] });
-    }
-
-    // Updates Objets
-    for (let i = obstacles.length - 1; i >= 0; i--) {
-        let obs = obstacles[i]; obs.y += currentSpeed;
-        if (Math.abs(playerX - lanes[obs.lane]) < 35 && Math.abs(playerY - obs.y) < 50) {
-            if (turboTimer > 0) { spawnParticles(lanes[obs.lane], obs.y, "#ff0055"); obstacles.splice(i, 1); }
-            else if (!isJumping || jumpHeight < 30) {
-                if (hasShield) { hasShield = false; multiplier = 1; obstacles.splice(i, 1); }
-                else { gameOver(); }
-            }
-        } else if (obs.y > canvas.height + 80) obstacles.splice(i, 1);
-    }
-
-    for (let i = powerups.length - 1; i >= 0; i--) {
-        let p = powerups[i]; p.y += currentSpeed;
-        if (Math.abs(playerX - lanes[p.lane]) < 35 && Math.abs(playerY - p.y) < 35) {
-            if (p.type === 'shield') { hasShield = true; shieldCollectedInSession = true; }
-            if (p.type === 'magnet') magnetTimer = 360;
-            if (p.type === 'turbo') turboTimer = 180;
-            spawnParticles(lanes[p.lane], p.y, "#ffe600"); playSFX(400, 800, "triangle", 0.25);
-            powerups.splice(i, 1);
-        } else if (p.y > canvas.height + 40) powerups.splice(i, 1);
-    }
-
-    let hasActiveMagnet = magnetTimer > 0 || equippedCar === 2;
-    for (let i = coins.length - 1; i >= 0; i--) {
-        let c = coins[i]; c.y += currentSpeed;
-        if (hasActiveMagnet && Math.sqrt(Math.pow(playerX - lanes[c.lane], 2) + Math.pow(playerY - c.y, 2)) < 150) {
-            lanes[c.lane] += (playerX - lanes[c.lane]) * 0.12;
-            c.y += (playerY - c.y) * 0.12;
-        }
-        if (Math.abs(playerX - lanes[c.lane]) < 30 && Math.abs(playerY - c.y) < 35) {
-            sessionCoins++;
-            if (sessionCoins % 10 === 0 && multiplier < 5) multiplier++;
-            playSFX(900, 1200, "sine", 0.15); coins.splice(i, 1);
-        } else if (c.y > canvas.height + 40) coins.splice(i, 1);
-    }
-}
-
-function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    // Sol & Voies
-    ctx.strokeStyle = "rgba(0, 243, 255, 0.15)";
-    for (let y = (score * 3) % 40; y < canvas.height; y += 40) {
-        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
-    }
-
-    // Powerups & Objets
-    coins.forEach(c => ctx.drawImage(coinImg, lanes[c.lane] - 15, c.y - 15, 30, 30));
-    powerups.forEach(p => {
-        ctx.font = "20px sans-serif"; ctx.textAlign = "center";
-        ctx.fillText(p.type === 'shield' ? "🛡️" : (p.type === 'magnet' ? "🧲" : "⚡"), lanes[p.lane], p.y);
-    });
-    obstacles.forEach(obs => ctx.drawImage(obstacleImg, lanes[obs.lane] - 25, obs.y - 40, 50, 80));
-
-    // Joueur
-    ctx.save(); ctx.translate(playerX, playerY - jumpHeight);
-    ctx.filter = CARS[equippedCar].filter;
-    ctx.drawImage(playerImg, -22, -40, 44, 80);
-    ctx.restore();
-}
-
-function checkQuests() {
-    if (sessionCoins >= 30) questState.c30.done = true;
-    if (sessionDuration >= 45) questState.t45.done = true;
-    if (shieldCollectedInSession) questState.s1.done = true;
-}
-
-function gameOver() {
-    gameRunning = false; stopMusic(); playSFX(100, 30, "sawtooth", 0.4);
-    sessionDuration = Math.floor((Date.now() - gameStartTime) / 1000);
-
-    let finalScoreNum = Math.floor(score / 10);
-    bankCoins += sessionCoins;
-    
-    checkQuests();
-    saveProgress();
-
-    if (finalScoreNum > highScore) { highScore = finalScoreNum; localStorage.setItem("cyber_runner_hs", highScore); }
-
-    document.getElementById("finalScore").innerText = finalScoreNum;
-    document.getElementById("gainedCoins").innerText = sessionCoins;
-    document.getElementById("survivedTime").innerText = sessionDuration;
-    document.getElementById("bestScore").innerText = highScore;
-    document.getElementById("gameOverScreen").classList.remove("hidden");
-}
-
-function loop() {
-    if (gameRunning) { update(); draw(); requestAnimationFrame(loop); }
-}
+function loop() { if (gameRunning) { update(); draw(); requestAnimationFrame(loop); } }
 
 openMenu();
 </script>
