@@ -1,0 +1,9 @@
+{
+  "name": "Cyber Runner Pro",
+  "short_name": "CyberRunner",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#03050c",
+  "theme_color": "#00f3ff",
+  "icons": []
+}
