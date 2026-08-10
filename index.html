@@ -3,7 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CYBER RUNNER PRO - Complete Edition</title>
+    <title>CYBER RUNNER PRO - Standalone & Offline</title>
+    
+    <!-- PWA configuration pour installation hors ligne -->
+    <meta name="theme-color" content="#00f3ff">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
     <style>
         :root {
             --bg: #03050c;
@@ -348,7 +354,7 @@ function openMenu() {
 function triggerJump() { if (!isJumping) { isJumping = true; jumpTimer = 0; playSFX(200, 500, "square", 0.15); } }
 
 document.getElementById("btnLeft").onclick = () => { if (gameRunning && currentLane > 0) currentLane--; };
-document.getElementById("btnRight").onclick = () => { if (gameRunning && currentLane < 2) currentLane--; };
+document.getElementById("btnRight").onclick = () => { if (gameRunning && currentLane < 2) currentLane++; };
 document.getElementById("btnJump").onclick = () => { if (gameRunning) triggerJump(); };
 
 window.addEventListener("keydown", e => {
@@ -531,6 +537,21 @@ function gameOver() {
 function loop() { if (gameRunning) { update(); draw(); requestAnimationFrame(loop); } }
 
 openMenu();
+
+// Service Worker embarqué pour fonctionnement 100% hors-ligne (PWA)
+if ('serviceWorker' in navigator) {
+    const swCode = `
+        const CACHE_NAME = 'cyber-runner-v1';
+        self.addEventListener('install', (e) => {
+            e.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(['./', './index.html'])));
+        });
+        self.addEventListener('fetch', (e) => {
+            e.respondWith(caches.match(e.request).then((res) => res || fetch(e.request)));
+        });
+    `;
+    const blob = new Blob([swCode], { type: 'application/javascript' });
+    navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(() => {});
+}
 </script>
 </body>
 </html>
