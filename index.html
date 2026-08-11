@@ -82,6 +82,10 @@
             display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: bold;
         }
 
+        .touch-btn:active {
+            background: rgba(0, 243, 255, 0.5);
+        }
+
         .overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: #03050c !important; display: flex; flex-direction: column;
@@ -204,7 +208,7 @@ const ctx = canvas.getContext("2d");
 
 const CARS = [
     { id: 0, name: "Cyber Runner", price: 0, ability: "Aucune", color: "#00f3ff" },
-    { id: 1, name: "Neon Interceptor", price: 100, ability: "Vitesse latérale +15%", color: "#ff0055" },
+    { id: 1, name: "Neon Interceptor", price: 100, ability: "Vitesse latérale Max", color: "#ff0055" },
     { id: 2, name: "Phantom Glider", price: 250, ability: "Aimant permanent", color: "#00ff66" },
     { id: 3, name: "Hyper Titan", price: 500, ability: "Bouclier au départ", color: "#ffe600" }
 ];
@@ -277,7 +281,7 @@ let playerX = lanes[1], playerY = 540;
 
 let isJumping = false, jumpHeight = 0, jumpTimer = 0;
 let gameRunning = false, score = 0, multiplier = 1, highScore = localStorage.getItem("cyber_runner_hs") || 0;
-let sessionCoins = 0, speed = 6.5, gameStartTime = 0, sessionDuration = 0, shieldCollectedInSession = false;
+let sessionCoins = 0, speed = 5.0, gameStartTime = 0, sessionDuration = 0, shieldCollectedInSession = false;
 
 let hasShield = false, magnetTimer = 0, turboTimer = 0, doubleCoinsTimer = 0;
 let obstacles = [], coins = [], powerups = [], particles = [];
@@ -378,9 +382,14 @@ function addParticles(x, y, color, count = 8) {
     }
 }
 
-document.getElementById("btnLeft").onclick = () => { if (gameRunning && currentLane > 0) currentLane--; };
-document.getElementById("btnRight").onclick = () => { if (gameRunning && currentLane < 2) currentLane++; };
-document.getElementById("btnJump").onclick = () => { if (gameRunning) triggerJump(); };
+// Gestion tactile réactive sans lag
+const btnLeft = document.getElementById("btnLeft");
+const btnRight = document.getElementById("btnRight");
+const btnJump = document.getElementById("btnJump");
+
+btnLeft.addEventListener("pointerdown", (e) => { e.preventDefault(); if (gameRunning && currentLane > 0) currentLane--; });
+btnRight.addEventListener("pointerdown", (e) => { e.preventDefault(); if (gameRunning && currentLane < 2) currentLane++; });
+btnJump.addEventListener("pointerdown", (e) => { e.preventDefault(); if (gameRunning) triggerJump(); });
 
 window.addEventListener("keydown", e => {
     if (!gameRunning) return;
@@ -395,7 +404,7 @@ function startGame() {
     document.getElementById("gameOverScreen").classList.add("hidden");
 
     currentLane = 1; playerX = lanes[1]; playerY = 540;
-    score = 0; multiplier = 1; sessionCoins = 0; speed = 6.5;
+    score = 0; multiplier = 1; sessionCoins = 0; speed = 5.0;
     isJumping = false; jumpHeight = 0; magnetTimer = 0; turboTimer = 0; doubleCoinsTimer = 0;
     gameStartTime = Date.now(); shieldCollectedInSession = false;
 
@@ -425,8 +434,13 @@ function checkQuests() {
 function update() {
     if (!gameRunning) return;
 
-    let currentSpeed = turboTimer > 0 ? speed * 1.8 : speed;
-    score += multiplier; speed += 0.001;
+    let currentSpeed = turboTimer > 0 ? speed * 1.5 : speed;
+    score += multiplier;
+    
+    // Limitation de la vitesse maximale pour éviter que le jeu ne devienne incontrôlable
+    if (speed < 9.5) {
+        speed += 0.0005;
+    }
 
     if (magnetTimer > 0) magnetTimer--;
     if (turboTimer > 0) turboTimer--;
@@ -438,7 +452,8 @@ function update() {
     document.getElementById("score").innerText = Math.floor(score / 10);
     document.getElementById("coins").innerText = sessionCoins;
 
-    let moveSpeed = equippedCar === 1 ? 0.35 : 0.25;
+    // Transition ultra rapide pour basculer d'une voie à l'autre sans latence
+    let moveSpeed = equippedCar === 1 ? 0.65 : 0.50;
     playerX += (lanes[currentLane] - playerX) * moveSpeed;
 
     if (isJumping) {
@@ -447,9 +462,9 @@ function update() {
         if (jumpTimer >= Math.PI) { isJumping = false; jumpHeight = 0; }
     }
 
-    if (Math.random() < 0.035) obstacles.push({ lane: Math.floor(Math.random() * 3), y: -80, type: Math.random() < 0.2 ? 'laser' : 'car' });
-    if (Math.random() < 0.03) coins.push({ lane: Math.floor(Math.random() * 3), y: -60 });
-    if (Math.random() < 0.008) {
+    if (Math.random() < 0.03) obstacles.push({ lane: Math.floor(Math.random() * 3), y: -80, type: Math.random() < 0.2 ? 'laser' : 'car' });
+    if (Math.random() < 0.028) coins.push({ lane: Math.floor(Math.random() * 3), y: -60 });
+    if (Math.random() < 0.007) {
         let types = ['shield', 'magnet', 'turbo', 'double'];
         powerups.push({ lane: Math.floor(Math.random() * 3), y: -60, type: types[Math.floor(Math.random() * types.length)] });
     }
