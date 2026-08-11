@@ -16,7 +16,7 @@
             --neon-pink: #ff0055;
             --neon-yellow: #ffe600;
             --neon-green: #00ff66;
-            --panel-bg: #0a0f1c;
+            --panel-bg: rgba(10, 15, 28, 0.85);
         }
 
         * { 
@@ -34,24 +34,33 @@
         }
 
         #game-container {
-            position: relative; box-shadow: 0 0 50px rgba(0, 243, 255, 0.3);
-            border-radius: 12px; overflow: hidden; border: 2px solid rgba(0, 243, 255, 0.5);
+            position: relative; box-shadow: 0 0 50px rgba(0, 243, 255, 0.25);
+            border-radius: 12px; overflow: hidden; border: 2px solid rgba(0, 243, 255, 0.4);
             width: 450px; height: 100%; max-height: 750px; max-width: 100vw;
-            display: flex; flex-direction: column;
+            display: flex; flex-direction: column; background: var(--bg);
         }
 
         canvas { display: block; background: #050714; width: 100%; height: 100%; }
 
+        /* SCROLLBAR CYBERPUNK */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(5, 10, 20, 0.8); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: var(--neon-blue); border-radius: 4px; box-shadow: 0 0 8px var(--neon-blue); }
+        ::-webkit-scrollbar-thumb:hover { background: var(--neon-pink); }
+
         .hud {
             position: absolute; top: 15px; left: 15px; right: 15px;
             display: flex; justify-content: space-between; align-items: center;
-            font-family: monospace; font-size: 12px; font-weight: bold; z-index: 5;
+            font-family: monospace; font-size: 11px; font-weight: bold; z-index: 5;
+            gap: 6px;
         }
 
         .hud-card {
-            background: rgba(10, 15, 28, 0.85); padding: 8px 12px; border-radius: 6px;
-            border: 1px solid rgba(0, 243, 255, 0.3);
+            background: var(--panel-bg); padding: 8px 10px; border-radius: 6px;
+            border: 1px solid rgba(0, 243, 255, 0.3); backdrop-filter: blur(4px);
         }
+
+        .hud-controls { display: flex; gap: 6px; }
 
         .powerup-status {
             position: absolute; top: 60px; left: 15px;
@@ -60,8 +69,8 @@
         }
 
         .badge {
-            background: rgba(10, 15, 28, 0.85); padding: 4px 8px; border-radius: 4px;
-            font-weight: bold; border: 1px solid; display: none;
+            background: var(--panel-bg); padding: 4px 8px; border-radius: 4px;
+            font-weight: bold; border: 1px solid; display: none; backdrop-filter: blur(4px);
         }
 
         .badge.active { display: block; }
@@ -70,11 +79,13 @@
         .badge-turbo { border-color: var(--neon-yellow); color: var(--neon-yellow); }
         .badge-double { border-color: var(--neon-green); color: var(--neon-green); }
 
-        .music-btn {
-            background: rgba(10, 15, 28, 0.85); border: 1px solid rgba(0, 243, 255, 0.4);
-            color: var(--neon-blue); padding: 8px 12px; border-radius: 6px;
+        .icon-btn {
+            background: var(--panel-bg); border: 1px solid rgba(0, 243, 255, 0.4);
+            color: var(--neon-blue); padding: 8px 10px; border-radius: 6px;
             cursor: pointer; font-family: monospace; font-size: 11px; font-weight: bold;
+            transition: all 0.2s ease;
         }
+        .icon-btn:hover { border-color: var(--neon-blue); box-shadow: 0 0 10px var(--neon-blue); }
 
         .touch-controls {
             position: absolute; bottom: 20px; left: 0; right: 0;
@@ -82,53 +93,90 @@
         }
 
         .touch-btn {
-            background: rgba(0, 243, 255, 0.2); border: 2px solid var(--neon-blue);
-            color: var(--neon-blue); width: 70px; height: 70px; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center; font-size: 26px; font-weight: bold;
-            cursor: pointer;
+            background: rgba(0, 243, 255, 0.15); border: 2px solid var(--neon-blue);
+            color: var(--neon-blue); width: 68px; height: 68px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: bold;
+            cursor: pointer; backdrop-filter: blur(4px); transition: transform 0.1s;
         }
 
         .touch-btn:active {
-            background: rgba(0, 243, 255, 0.6);
-            transform: scale(0.95);
+            background: rgba(0, 243, 255, 0.5); transform: scale(0.92);
         }
 
         .overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: #03050c !important; display: flex; flex-direction: column;
-            align-items: center; justify-content: center; z-index: 10; padding: 20px;
+            background: radial-gradient(circle at center, #0a0f24 0%, #03050c 100%) !important;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            z-index: 10; padding: 20px;
         }
 
-        h1 { font-size: 24px; color: var(--neon-blue); margin: 0; text-shadow: 0 0 15px var(--neon-blue); }
-        .brand { color: var(--neon-yellow); font-family: monospace; font-size: 12px; font-weight: bold; margin-top: 4px; margin-bottom: 12px; letter-spacing: 1px; }
+        /* EFFET GLITCH ET NEON TITRE */
+        h1 {
+            font-size: 26px; color: #fff; margin: 0; text-transform: uppercase;
+            text-shadow: 0 0 8px var(--neon-blue), 0 0 20px var(--neon-blue);
+            letter-spacing: 1.5px; animation: glow 2s infinite alternate;
+        }
+
+        @keyframes glow {
+            0% { text-shadow: 0 0 5px var(--neon-blue), 0 0 15px var(--neon-blue); }
+            100% { text-shadow: 0 0 10px var(--neon-blue), 0 0 30px var(--neon-blue), 0 0 40px var(--neon-blue); }
+        }
+
+        .brand {
+            color: var(--neon-yellow); font-family: monospace; font-size: 11px;
+            font-weight: bold; margin-top: 4px; margin-bottom: 12px; letter-spacing: 1px;
+            text-shadow: 0 0 5px var(--neon-yellow);
+        }
 
         .tabs { display: flex; gap: 10px; margin-bottom: 12px; width: 100%; }
 
         .tab-btn {
-            flex: 1; background: var(--panel-bg); border: 1px solid rgba(255,255,255,0.2);
-            color: #fff; padding: 10px; font-family: monospace; font-size: 12px;
-            cursor: pointer; border-radius: 6px; text-align: center;
+            flex: 1; background: rgba(10, 15, 28, 0.6); border: 1px solid rgba(0, 243, 255, 0.2);
+            color: #8a99ad; padding: 10px; font-family: monospace; font-size: 12px; font-weight: bold;
+            cursor: pointer; border-radius: 6px; text-align: center; transition: all 0.2s ease;
         }
 
-        .tab-btn.active { border-color: var(--neon-blue); color: var(--neon-blue); background: #0c1428; }
+        .tab-btn.active {
+            border-color: var(--neon-blue); color: var(--neon-blue);
+            background: rgba(0, 243, 255, 0.1); box-shadow: 0 0 12px rgba(0, 243, 255, 0.2);
+        }
 
         .content-container {
             width: 100%; display: flex; flex-direction: column; gap: 10px;
-            margin-bottom: 15px; max-height: 240px; overflow-y: auto;
+            margin-bottom: 15px; max-height: 250px; overflow-y: auto; padding-right: 4px;
         }
 
+        /* CARTE VEHICULE ET MISSION STYLE NEON */
         .shop-item, .quest-card {
-            background: var(--panel-bg); border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 8px; padding: 10px; display: flex; align-items: center;
-            justify-content: space-between; gap: 10px;
+            background: linear-gradient(135deg, rgba(15, 22, 41, 0.9) 0%, rgba(8, 12, 24, 0.9) 100%);
+            border: 1px solid rgba(0, 243, 255, 0.2); border-radius: 8px; padding: 12px;
+            display: flex; align-items: center; justify-content: space-between; gap: 10px;
+            transition: all 0.2s ease; position: relative; overflow: hidden;
         }
-        .shop-item.active { border-color: var(--neon-blue); }
-        .car-preview { width: 24px; height: 38px; border-radius: 4px; border: 2px solid; flex-shrink: 0; }
+
+        .shop-item:hover, .quest-card:hover {
+            border-color: rgba(0, 243, 255, 0.5); transform: translateY(-1px);
+        }
+
+        .shop-item.active {
+            border-color: var(--neon-blue); box-shadow: 0 0 10px rgba(0, 243, 255, 0.3);
+            background: linear-gradient(135deg, rgba(0, 243, 255, 0.15) 0%, rgba(8, 12, 24, 0.9) 100%);
+        }
+
+        .car-preview {
+            width: 26px; height: 40px; border-radius: 5px; border: 2px solid;
+            flex-shrink: 0; box-shadow: 0 0 8px currentColor;
+        }
 
         .btn-small {
-            background: #050a14; border: 1px solid var(--neon-green);
-            color: var(--neon-green); padding: 6px 12px; border-radius: 4px;
+            background: rgba(5, 10, 20, 0.8); border: 1px solid var(--neon-green);
+            color: var(--neon-green); padding: 7px 12px; border-radius: 5px;
             cursor: pointer; font-family: monospace; font-size: 11px; font-weight: bold;
+            transition: all 0.2s ease;
+        }
+
+        .btn-small:hover:not(:disabled) {
+            background: var(--neon-green); color: #000; box-shadow: 0 0 10px var(--neon-green);
         }
 
         .btn-small:disabled {
@@ -136,7 +184,8 @@
         }
 
         .btn-small.claimable {
-            background: var(--neon-green); color: #000; box-shadow: 0 0 10px var(--neon-green); animation: pulse 1s infinite alternate;
+            background: var(--neon-green); color: #000; box-shadow: 0 0 12px var(--neon-green);
+            animation: pulse 1s infinite alternate;
         }
 
         @keyframes pulse {
@@ -144,18 +193,28 @@
             to { transform: scale(1.05); }
         }
 
+        /* BOUTON PRINCIPAL / LANCER */
         .btn {
-            background: transparent; border: 2px solid var(--neon-pink); color: var(--neon-pink);
-            padding: 12px 30px; font-size: 15px; font-family: monospace; font-weight: bold;
-            cursor: pointer; border-radius: 6px; box-shadow: 0 0 10px rgba(255, 0, 85, 0.3); width: 100%;
+            background: linear-gradient(90deg, rgba(255,0,85,0.1) 0%, rgba(255,0,85,0.3) 50%, rgba(255,0,85,0.1) 100%);
+            border: 2px solid var(--neon-pink); color: #fff;
+            padding: 14px 30px; font-size: 15px; font-family: monospace; font-weight: bold;
+            cursor: pointer; border-radius: 8px; box-shadow: 0 0 15px rgba(255, 0, 85, 0.4);
+            width: 100%; letter-spacing: 1px; transition: all 0.2s ease; text-transform: uppercase;
+        }
+
+        .btn:hover {
+            background: var(--neon-pink); color: #000; box-shadow: 0 0 25px var(--neon-pink);
         }
 
         .btn-install {
-            background: var(--neon-green); border: 2px solid var(--neon-green); color: #000;
-            padding: 10px 20px; font-size: 13px; font-family: monospace; font-weight: bold;
-            cursor: pointer; border-radius: 6px; box-shadow: 0 0 12px var(--neon-green);
+            background: linear-gradient(90deg, rgba(0,255,102,0.2) 0%, rgba(0,255,102,0.4) 100%);
+            border: 1px solid var(--neon-green); color: var(--neon-green);
+            padding: 10px 20px; font-size: 12px; font-family: monospace; font-weight: bold;
+            cursor: pointer; border-radius: 6px; box-shadow: 0 0 10px rgba(0, 255, 106, 0.3);
             width: 100%; margin-bottom: 10px; display: none; text-align: center;
         }
+
+        .btn-install:hover { background: var(--neon-green); color: #000; }
 
         .hidden { display: none !important; }
     </style>
@@ -165,12 +224,17 @@
 <div id="game-container">
     <canvas id="canvas" width="450" height="680"></canvas>
 
+    <!-- HUD (Barre supérieure) -->
     <div class="hud">
         <div class="hud-card">SCORE: <span id="score" style="color: var(--neon-blue);">0</span> <span id="multiplier" style="color: var(--neon-yellow);">x1</span></div>
         <div class="hud-card">PIÈCES: <span id="coins" style="color: var(--neon-green);">0</span></div>
-        <button class="music-btn" id="musicToggleBtn" onclick="toggleMusic()">🔊 AUDIO</button>
+        <div class="hud-controls">
+            <button class="icon-btn" id="pauseBtn" onclick="togglePause()">⏸️ PAUSE</button>
+            <button class="icon-btn" id="musicToggleBtn" onclick="toggleMusic()">🔊 AUDIO</button>
+        </div>
     </div>
 
+    <!-- Power-ups actifs -->
     <div class="powerup-status">
         <div id="badgeShield" class="badge badge-shield">🛡️ BOUCLIER</div>
         <div id="badgeMagnet" class="badge badge-magnet">🧲 AIMANT</div>
@@ -178,20 +242,21 @@
         <div id="badgeDouble" class="badge badge-double">2️⃣ PIÈCES x2</div>
     </div>
 
+    <!-- Contrôles Tactiles -->
     <div class="touch-controls">
         <div class="touch-btn" id="btnLeft">◄</div>
         <div class="touch-btn" id="btnJump">▲</div>
         <div class="touch-btn" id="btnRight">►</div>
     </div>
 
+    <!-- Écran d'Accueil / Menu -->
     <div id="startScreen" class="overlay">
         <h1>Cyber Runner Pro</h1>
         <div class="brand">Conçu par Haba technologie</div>
 
-        <!-- Bouton de Téléchargement/Installation PWA -->
         <button id="installBtn" class="btn-install" onclick="installApp()">📲 TÉLÉCHARGER L'APPLICATION</button>
 
-        <div style="font-family: monospace; color: var(--neon-green); font-size: 14px; margin-bottom: 10px;">
+        <div style="font-family: monospace; color: var(--neon-green); font-size: 13px; margin-bottom: 12px; text-shadow: 0 0 5px var(--neon-green);">
             💰 SOLDE : <span id="totalCoins">0</span> PIÈCES
         </div>
 
@@ -206,10 +271,21 @@
         <button class="btn" onclick="startGame()">LANCER LA COURSE</button>
     </div>
 
-    <div id="gameOverScreen" class="overlay hidden">
-        <h1 style="color: var(--neon-pink);">CRASH DÉTECTÉ</h1>
+    <!-- Écran de Pause -->
+    <div id="pauseScreen" class="overlay hidden">
+        <h1>PAUSE</h1>
         <div class="brand">Conçu par Haba technologie</div>
-        <p style="color: #a0aab8; text-align: center; line-height: 1.8;">
+        <div style="display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 250px; margin-top: 20px;">
+            <button class="btn" style="border-color: var(--neon-blue); box-shadow: 0 0 15px rgba(0,243,255,0.4);" onclick="togglePause()">REPRENDRE</button>
+            <button class="btn" onclick="quitToMenu()">MENU PRINCIPAL</button>
+        </div>
+    </div>
+
+    <!-- Écran Game Over -->
+    <div id="gameOverScreen" class="overlay hidden">
+        <h1 style="color: var(--neon-pink); text-shadow: 0 0 15px var(--neon-pink);">CRASH DÉTECTÉ</h1>
+        <div class="brand">Conçu par Haba technologie</div>
+        <p style="color: #a0aab8; text-align: center; line-height: 1.8; font-family: monospace; margin: 15px 0;">
             Score Session : <b id="finalScore" style="color: #fff">0</b><br>
             Pièces Gagnées : <b id="gainedCoins" style="color: var(--neon-green)">0</b><br>
             Temps de Survie : <b id="survivedTime" style="color: var(--neon-blue)">0</b>s<br>
@@ -245,23 +321,21 @@ let questState = JSON.parse(localStorage.getItem("cyber_quests_state")) || {
     s1: { done: false, claimed: false }
 };
 
-// GESTION DU BOUTON TÉLÉCHARGER / INSTALLER L'APPLICATION
+let isPaused = false;
 let deferredPrompt = null;
 const installBtn = document.getElementById("installBtn");
 
 window.addEventListener("beforeinstallprompt", (e) => {
     e.preventDefault();
     deferredPrompt = e;
-    installBtn.style.display = "block"; // Affiche le bouton si le navigateur autorise l'installation
+    installBtn.style.display = "block";
 });
 
 function installApp() {
     if (deferredPrompt) {
         deferredPrompt.prompt();
-        deferredPrompt.userChoice.then((choiceResult) => {
-            if (choiceResult.outcome === "accepted") {
-                installBtn.style.display = "none";
-            }
+        deferredPrompt.userChoice.then((result) => {
+            if (result.outcome === "accepted") installBtn.style.display = "none";
             deferredPrompt = null;
         });
     }
@@ -281,11 +355,11 @@ function initAudio() {
 function toggleMusic() {
     musicMuted = !musicMuted;
     document.getElementById("musicToggleBtn").innerText = musicMuted ? "🔇 AUDIO" : "🔊 AUDIO";
-    if (musicMuted) stopMusic(); else if (gameRunning) startMusic();
+    if (musicMuted) stopMusic(); else if (gameRunning && !isPaused) startMusic();
 }
 
 function playSynthwaveNote() {
-    if (!audioCtx || musicMuted || !gameRunning) return;
+    if (!audioCtx || musicMuted || !gameRunning || isPaused) return;
     const bassNotes = [110, 110, 130.81, 110, 146.83, 110, 130.81, 98.00];
     const osc = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
@@ -324,6 +398,26 @@ let sessionCoins = 0, speed = 4.0, gameStartTime = 0, sessionDuration = 0, shiel
 
 let hasShield = false, magnetTimer = 0, turboTimer = 0, doubleCoinsTimer = 0;
 let obstacles = [], coins = [], powerups = [], particles = [];
+
+function togglePause() {
+    if (!gameRunning) return;
+    isPaused = !isPaused;
+    document.getElementById("pauseScreen").classList.toggle("hidden", !isPaused);
+    if (isPaused) {
+        stopMusic();
+    } else {
+        startMusic();
+        loop();
+    }
+}
+
+function quitToMenu() {
+    isPaused = false;
+    gameRunning = false;
+    stopMusic();
+    document.getElementById("pauseScreen").classList.add("hidden");
+    openMenu();
+}
 
 function switchTab(tab) {
     document.getElementById("tabGarage").classList.toggle("active", tab === 'garage');
@@ -406,9 +500,10 @@ function openMenu() {
     updateCoinsDisplay(); renderGarage(); renderQuests();
     document.getElementById("startScreen").classList.remove("hidden");
     document.getElementById("gameOverScreen").classList.add("hidden");
+    document.getElementById("pauseScreen").classList.add("hidden");
 }
 
-function triggerJump() { if (!isJumping) { isJumping = true; jumpTimer = 0; playSFX(200, 500, "square", 0.15); } }
+function triggerJump() { if (!isJumping && gameRunning && !isPaused) { isJumping = true; jumpTimer = 0; playSFX(200, 500, "square", 0.15); } }
 
 function addParticles(x, y, color, count = 8) {
     for (let i = 0; i < count; i++) {
@@ -421,14 +516,13 @@ function addParticles(x, y, color, count = 8) {
     }
 }
 
-function moveLeft() { if (gameRunning && currentLane > 0) currentLane--; }
-function moveRight() { if (gameRunning && currentLane < 2) currentLane++; }
+function moveLeft() { if (gameRunning && !isPaused && currentLane > 0) currentLane--; }
+function moveRight() { if (gameRunning && !isPaused && currentLane < 2) currentLane++; }
 
 window.addEventListener("keydown", e => {
-    if (!gameRunning) return;
-    if (["ArrowLeft", "KeyA", "ArrowRight", "KeyD", "ArrowUp", "Space"].includes(e.code)) {
-        e.preventDefault();
-    }
+    if (e.code === "KeyP" || e.code === "Escape") { togglePause(); return; }
+    if (!gameRunning || isPaused) return;
+    if (["ArrowLeft", "KeyA", "ArrowRight", "KeyD", "ArrowUp", "Space"].includes(e.code)) e.preventDefault();
     if (e.repeat) return;
 
     if (e.code === "ArrowLeft" || e.code === "KeyA") moveLeft();
@@ -453,11 +547,12 @@ function startGame() {
     initAudio();
     document.getElementById("startScreen").classList.add("hidden");
     document.getElementById("gameOverScreen").classList.add("hidden");
+    document.getElementById("pauseScreen").classList.add("hidden");
 
     currentLane = 1; playerX = lanes[1]; playerY = 540;
     score = 0; multiplier = 1; sessionCoins = 0; speed = 4.0;
     isJumping = false; jumpHeight = 0; magnetTimer = 0; turboTimer = 0; doubleCoinsTimer = 0;
-    gameStartTime = Date.now(); shieldCollectedInSession = false;
+    gameStartTime = Date.now(); shieldCollectedInSession = false; isPaused = false;
 
     hasShield = (equippedCar === 3);
     obstacles = []; coins = []; powerups = []; particles = [];
@@ -483,14 +578,12 @@ function checkQuests() {
 }
 
 function update() {
-    if (!gameRunning) return;
+    if (!gameRunning || isPaused) return;
 
     let currentSpeed = turboTimer > 0 ? speed * 1.4 : speed;
     score += multiplier;
     
-    if (speed < 7.0) {
-        speed += 0.0003;
-    }
+    if (speed < 7.0) speed += 0.0003;
 
     if (magnetTimer > 0) magnetTimer--;
     if (turboTimer > 0) turboTimer--;
@@ -665,13 +758,13 @@ function gameOver() {
     document.getElementById("gameOverScreen").classList.remove("hidden");
 }
 
-function loop() { if (gameRunning) { update(); draw(); requestAnimationFrame(loop); } }
+function loop() { if (gameRunning && !isPaused) { update(); draw(); requestAnimationFrame(loop); } }
 
 openMenu();
 
 if ('serviceWorker' in navigator) {
     const swCode = `
-        const CACHE_NAME = 'cyber-runner-v1';
+        const CACHE_NAME = 'cyber-runner-v2';
         self.addEventListener('install', (e) => {
             e.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(['./', './index.html'])));
         });
