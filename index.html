@@ -114,7 +114,7 @@
 
         .content-container {
             width: 100%; display: flex; flex-direction: column; gap: 10px;
-            margin-bottom: 15px; max-height: 280px; overflow-y: auto;
+            margin-bottom: 15px; max-height: 240px; overflow-y: auto;
         }
 
         .shop-item, .quest-card {
@@ -150,6 +150,13 @@
             cursor: pointer; border-radius: 6px; box-shadow: 0 0 10px rgba(255, 0, 85, 0.3); width: 100%;
         }
 
+        .btn-install {
+            background: var(--neon-green); border: 2px solid var(--neon-green); color: #000;
+            padding: 10px 20px; font-size: 13px; font-family: monospace; font-weight: bold;
+            cursor: pointer; border-radius: 6px; box-shadow: 0 0 12px var(--neon-green);
+            width: 100%; margin-bottom: 10px; display: none; text-align: center;
+        }
+
         .hidden { display: none !important; }
     </style>
 </head>
@@ -180,6 +187,9 @@
     <div id="startScreen" class="overlay">
         <h1>Cyber Runner Pro</h1>
         <div class="brand">Conçu par Haba technologie</div>
+
+        <!-- Bouton de Téléchargement/Installation PWA -->
+        <button id="installBtn" class="btn-install" onclick="installApp()">📲 TÉLÉCHARGER L'APPLICATION</button>
 
         <div style="font-family: monospace; color: var(--neon-green); font-size: 14px; margin-bottom: 10px;">
             💰 SOLDE : <span id="totalCoins">0</span> PIÈCES
@@ -234,6 +244,28 @@ let questState = JSON.parse(localStorage.getItem("cyber_quests_state")) || {
     t45: { done: false, claimed: false },
     s1: { done: false, claimed: false }
 };
+
+// GESTION DU BOUTON TÉLÉCHARGER / INSTALLER L'APPLICATION
+let deferredPrompt = null;
+const installBtn = document.getElementById("installBtn");
+
+window.addEventListener("beforeinstallprompt", (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    installBtn.style.display = "block"; // Affiche le bouton si le navigateur autorise l'installation
+});
+
+function installApp() {
+    if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then((choiceResult) => {
+            if (choiceResult.outcome === "accepted") {
+                installBtn.style.display = "none";
+            }
+            deferredPrompt = null;
+        });
+    }
+}
 
 const AudioCtx = window.AudioContext || window.webkitAudioContext;
 let audioCtx = null;
@@ -390,22 +422,20 @@ function addParticles(x, y, color, count = 8) {
 }
 
 function moveLeft() { if (gameRunning && currentLane > 0) currentLane--; }
-function moveRight() { if (gameRunning && currentLane < 2) currentLane--; }
+function moveRight() { if (gameRunning && currentLane < 2) currentLane++; }
 
-// GESTION DU CLAVIER PC ULTRA-RÉACTIVE SANS ACCUMULATION NI DÉLAI DU SYSTÈME
 window.addEventListener("keydown", e => {
     if (!gameRunning) return;
     if (["ArrowLeft", "KeyA", "ArrowRight", "KeyD", "ArrowUp", "Space"].includes(e.code)) {
-        e.preventDefault(); // Empêche le défilement de la page sur PC
+        e.preventDefault();
     }
-    if (e.repeat) return; // Ignore la répétion lente automatique du clavier PC
+    if (e.repeat) return;
 
     if (e.code === "ArrowLeft" || e.code === "KeyA") moveLeft();
     if (e.code === "ArrowRight" || e.code === "KeyD") moveRight();
     if (e.code === "Space" || e.code === "ArrowUp") triggerJump();
 });
 
-// ÉCRANS TACTILES ET SOURIS
 const btnLeft = document.getElementById("btnLeft");
 const btnRight = document.getElementById("btnRight");
 const btnJump = document.getElementById("btnJump");
@@ -458,7 +488,6 @@ function update() {
     let currentSpeed = turboTimer > 0 ? speed * 1.4 : speed;
     score += multiplier;
     
-    // Vitesse très progressive avec limite fixe à 7.0 max
     if (speed < 7.0) {
         speed += 0.0003;
     }
@@ -473,7 +502,6 @@ function update() {
     document.getElementById("score").innerText = Math.floor(score / 10);
     document.getElementById("coins").innerText = sessionCoins;
 
-    // Repositionnement direct et instantané de la voiture
     playerX = lanes[currentLane];
 
     if (isJumping) {
