@@ -17,6 +17,7 @@
             --neon-yellow: #ffe600;
             --neon-green: #00ff66;
             --panel-bg: rgba(10, 15, 28, 0.85);
+            --city-color: #00f3ff;
         }
 
         * { 
@@ -34,10 +35,11 @@
         }
 
         #game-container {
-            position: relative; box-shadow: 0 0 50px rgba(0, 243, 255, 0.25);
-            border-radius: 12px; overflow: hidden; border: 2px solid rgba(0, 243, 255, 0.4);
+            position: relative; box-shadow: 0 0 50px var(--city-color);
+            border-radius: 12px; overflow: hidden; border: 2px solid var(--city-color);
             width: 450px; height: 100%; max-height: 750px; max-width: 100vw;
             display: flex; flex-direction: column; background: var(--bg);
+            transition: border-color 0.8s ease, box-shadow 0.8s ease;
         }
 
         canvas { display: block; background: #050714; width: 100%; height: 100%; }
@@ -110,7 +112,6 @@
             z-index: 10; padding: 20px;
         }
 
-        /* EFFET GLITCH ET NEON TITRE */
         h1 {
             font-size: 26px; color: #fff; margin: 0; text-transform: uppercase;
             text-shadow: 0 0 8px var(--neon-blue), 0 0 20px var(--neon-blue);
@@ -146,7 +147,6 @@
             margin-bottom: 15px; max-height: 250px; overflow-y: auto; padding-right: 4px;
         }
 
-        /* CARTE VEHICULE ET MISSION STYLE NEON */
         .shop-item, .quest-card {
             background: linear-gradient(135deg, rgba(15, 22, 41, 0.9) 0%, rgba(8, 12, 24, 0.9) 100%);
             border: 1px solid rgba(0, 243, 255, 0.2); border-radius: 8px; padding: 12px;
@@ -193,7 +193,6 @@
             to { transform: scale(1.05); }
         }
 
-        /* BOUTON PRINCIPAL / LANCER */
         .btn {
             background: linear-gradient(90deg, rgba(255,0,85,0.1) 0%, rgba(255,0,85,0.3) 50%, rgba(255,0,85,0.1) 100%);
             border: 2px solid var(--neon-pink); color: #fff;
@@ -224,9 +223,10 @@
 <div id="game-container">
     <canvas id="canvas" width="450" height="680"></canvas>
 
-    <!-- HUD (Barre supérieure) -->
+    <!-- HUD -->
     <div class="hud">
         <div class="hud-card">SCORE: <span id="score" style="color: var(--neon-blue);">0</span> <span id="multiplier" style="color: var(--neon-yellow);">x1</span></div>
+        <div class="hud-card" style="color: var(--neon-pink);">LVL <span id="level">1</span></div>
         <div class="hud-card">PIÈCES: <span id="coins" style="color: var(--neon-green);">0</span></div>
         <div class="hud-controls">
             <button class="icon-btn" id="pauseBtn" onclick="togglePause()">⏸️ PAUSE</button>
@@ -234,7 +234,7 @@
         </div>
     </div>
 
-    <!-- Power-ups actifs -->
+    <!-- Power-ups -->
     <div class="powerup-status">
         <div id="badgeShield" class="badge badge-shield">🛡️ BOUCLIER</div>
         <div id="badgeMagnet" class="badge badge-magnet">🧲 AIMANT</div>
@@ -249,7 +249,7 @@
         <div class="touch-btn" id="btnRight">►</div>
     </div>
 
-    <!-- Écran d'Accueil / Menu -->
+    <!-- Menu Principal -->
     <div id="startScreen" class="overlay">
         <h1>Cyber Runner Pro</h1>
         <div class="brand">Conçu par Haba technologie</div>
@@ -271,7 +271,7 @@
         <button class="btn" onclick="startGame()">LANCER LA COURSE</button>
     </div>
 
-    <!-- Écran de Pause -->
+    <!-- Pause -->
     <div id="pauseScreen" class="overlay hidden">
         <h1>PAUSE</h1>
         <div class="brand">Conçu par Haba technologie</div>
@@ -281,12 +281,13 @@
         </div>
     </div>
 
-    <!-- Écran Game Over -->
+    <!-- Game Over -->
     <div id="gameOverScreen" class="overlay hidden">
         <h1 style="color: var(--neon-pink); text-shadow: 0 0 15px var(--neon-pink);">CRASH DÉTECTÉ</h1>
         <div class="brand">Conçu par Haba technologie</div>
         <p style="color: #a0aab8; text-align: center; line-height: 1.8; font-family: monospace; margin: 15px 0;">
             Score Session : <b id="finalScore" style="color: #fff">0</b><br>
+            Niveau Atteint : <b id="finalLevel" style="color: var(--neon-pink)">1</b><br>
             Pièces Gagnées : <b id="gainedCoins" style="color: var(--neon-green)">0</b><br>
             Temps de Survie : <b id="survivedTime" style="color: var(--neon-blue)">0</b>s<br>
             Record : <b id="bestScore" style="color: var(--neon-yellow)">0</b>
@@ -310,6 +311,14 @@ const QUESTS_DEF = [
     { id: "c30", title: "Collector", desc: "30 pièces en 1 partie", reward: 50 },
     { id: "t45", title: "Survivant", desc: "Survivre 45 secondes", reward: 75 },
     { id: "s1", title: "Invincible", desc: "Obtenir 1 Bouclier", reward: 40 }
+];
+
+// COULEURS DES NIVEAUX DE VILLE
+const LEVEL_THEMES = [
+    { level: 1, color: "#00f3ff", name: "Neon Cyan" },
+    { level: 2, color: "#a100ff", name: "Purple District" },
+    { level: 3, color: "#ff0055", name: "Red Warning Zone" },
+    { level: 4, color: "#00ff66", name: "Matrix Overdrive" }
 ];
 
 let bankCoins = parseInt(localStorage.getItem("cyber_bank_coins")) || 0;
@@ -341,6 +350,17 @@ function installApp() {
     }
 }
 
+// SYNTHÈSE VOCALE CYBERPUNK (VOIX)
+function speakVoice(text) {
+    if (musicMuted || !('speechSynthesis' in window)) return;
+    window.speechSynthesis.cancel(); // Stoppe la voix précédente
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'en-US';
+    utterance.pitch = 0.8; // Voix cyberpunk légèrement grave
+    utterance.rate = 1.1;
+    window.speechSynthesis.speak(utterance);
+}
+
 const AudioCtx = window.AudioContext || window.webkitAudioContext;
 let audioCtx = null;
 let musicMuted = false;
@@ -355,7 +375,10 @@ function initAudio() {
 function toggleMusic() {
     musicMuted = !musicMuted;
     document.getElementById("musicToggleBtn").innerText = musicMuted ? "🔇 AUDIO" : "🔊 AUDIO";
-    if (musicMuted) stopMusic(); else if (gameRunning && !isPaused) startMusic();
+    if (musicMuted) {
+        stopMusic();
+        if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+    } else if (gameRunning && !isPaused) startMusic();
 }
 
 function playSynthwaveNote() {
@@ -395,6 +418,10 @@ let playerX = lanes[1], playerY = 540;
 let isJumping = false, jumpHeight = 0, jumpTimer = 0;
 let gameRunning = false, score = 0, multiplier = 1, highScore = localStorage.getItem("cyber_runner_hs") || 0;
 let sessionCoins = 0, speed = 4.0, gameStartTime = 0, sessionDuration = 0, shieldCollectedInSession = false;
+
+let currentLevel = 1;
+let obstacleSpawnRate = 0.025;
+let currentCityColor = "#00f3ff";
 
 let hasShield = false, magnetTimer = 0, turboTimer = 0, doubleCoinsTimer = 0;
 let obstacles = [], coins = [], powerups = [], particles = [];
@@ -543,6 +570,27 @@ addTouchHandler(btnLeft, moveLeft);
 addTouchHandler(btnRight, moveRight);
 addTouchHandler(btnJump, triggerJump);
 
+function updateDifficultyAndCity() {
+    let rawScore = Math.floor(score / 10);
+    let newLevel = 1;
+
+    if (rawScore >= 1200) newLevel = 4;
+    else if (rawScore >= 700) newLevel = 3;
+    else if (rawScore >= 300) newLevel = 2;
+
+    if (newLevel !== currentLevel) {
+        currentLevel = newLevel;
+        currentCityColor = LEVEL_THEMES[currentLevel - 1].color;
+        document.documentElement.style.setProperty('--city-color', currentCityColor);
+        speakVoice(`Level ${currentLevel}`);
+        addParticles(canvas.width / 2, canvas.height / 2, currentCityColor, 25);
+    }
+
+    // Augmentation dynamique de la densité du trafic
+    obstacleSpawnRate = 0.022 + (currentLevel * 0.007);
+    document.getElementById("level").innerText = currentLevel;
+}
+
 function startGame() {
     initAudio();
     document.getElementById("startScreen").classList.add("hidden");
@@ -551,6 +599,10 @@ function startGame() {
 
     currentLane = 1; playerX = lanes[1]; playerY = 540;
     score = 0; multiplier = 1; sessionCoins = 0; speed = 4.0;
+    currentLevel = 1; obstacleSpawnRate = 0.025;
+    currentCityColor = LEVEL_THEMES[0].color;
+    document.documentElement.style.setProperty('--city-color', currentCityColor);
+
     isJumping = false; jumpHeight = 0; magnetTimer = 0; turboTimer = 0; doubleCoinsTimer = 0;
     gameStartTime = Date.now(); shieldCollectedInSession = false; isPaused = false;
 
@@ -558,7 +610,7 @@ function startGame() {
     obstacles = []; coins = []; powerups = []; particles = [];
     gameRunning = true;
 
-    updateUI(); startMusic(); loop();
+    updateUI(); startMusic(); speakVoice("Engine Started"); loop();
 }
 
 function updateUI() {
@@ -583,13 +635,14 @@ function update() {
     let currentSpeed = turboTimer > 0 ? speed * 1.4 : speed;
     score += multiplier;
     
-    if (speed < 7.0) speed += 0.0003;
+    if (speed < 8.0) speed += 0.0004;
 
     if (magnetTimer > 0) magnetTimer--;
     if (turboTimer > 0) turboTimer--;
     if (doubleCoinsTimer > 0) doubleCoinsTimer--;
-    updateUI();
 
+    updateDifficultyAndCity();
+    updateUI();
     checkQuests();
 
     document.getElementById("score").innerText = Math.floor(score / 10);
@@ -603,7 +656,8 @@ function update() {
         if (jumpTimer >= Math.PI) { isJumping = false; jumpHeight = 0; }
     }
 
-    if (Math.random() < 0.025) obstacles.push({ lane: Math.floor(Math.random() * 3), y: -80, type: Math.random() < 0.2 ? 'laser' : 'car' });
+    // Trafic et obstacles dynamiques
+    if (Math.random() < obstacleSpawnRate) obstacles.push({ lane: Math.floor(Math.random() * 3), y: -80, type: Math.random() < 0.25 ? 'laser' : 'car' });
     if (Math.random() < 0.025) coins.push({ lane: Math.floor(Math.random() * 3), y: -60 });
     if (Math.random() < 0.006) {
         let types = ['shield', 'magnet', 'turbo', 'double'];
@@ -629,6 +683,7 @@ function update() {
                     hasShield = false; multiplier = 1;
                     addParticles(lanes[obs.lane], obs.y, "#00f3ff", 10);
                     obstacles.splice(i, 1); playSFX(300, 150, "sawtooth", 0.2);
+                    speakVoice("Shield Down");
                 } else { gameOver(); }
             }
         } else if (obs.y > canvas.height + 80) obstacles.splice(i, 1);
@@ -637,10 +692,10 @@ function update() {
     for (let i = powerups.length - 1; i >= 0; i--) {
         let p = powerups[i]; p.y += currentSpeed;
         if (Math.abs(playerX - lanes[p.lane]) < 35 && Math.abs(playerY - p.y) < 35) {
-            if (p.type === 'shield') { hasShield = true; shieldCollectedInSession = true; }
-            if (p.type === 'magnet') magnetTimer = 360;
-            if (p.type === 'turbo') turboTimer = 180;
-            if (p.type === 'double') doubleCoinsTimer = 360;
+            if (p.type === 'shield') { hasShield = true; shieldCollectedInSession = true; speakVoice("Shield Activated"); }
+            if (p.type === 'magnet') { magnetTimer = 360; speakVoice("Magnet Activated"); }
+            if (p.type === 'turbo') { turboTimer = 180; speakVoice("Turbo Activated"); }
+            if (p.type === 'double') { doubleCoinsTimer = 360; speakVoice("Double Coins"); }
             addParticles(lanes[p.lane], p.y, "#ffe600", 8);
             playSFX(400, 800, "triangle", 0.25); powerups.splice(i, 1);
         } else if (p.y > canvas.height + 40) powerups.splice(i, 1);
@@ -714,11 +769,13 @@ function drawCoin(x, y) {
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    ctx.strokeStyle = "rgba(0, 243, 255, 0.2)"; ctx.lineWidth = 2;
+    // LIGNES DE ROUTE DYNAMIQUES AVEC LA COULEUR DU NIVEAU
+    ctx.strokeStyle = currentCityColor; ctx.lineWidth = 2;
+    ctx.globalAlpha = 0.3;
     ctx.setLineDash([20, 20]); ctx.lineDashOffset = -score * 2;
     ctx.beginPath(); ctx.moveTo(167, 0); ctx.lineTo(167, canvas.height); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(292, 0); ctx.lineTo(292, canvas.height); ctx.stroke();
-    ctx.setLineDash([]);
+    ctx.setLineDash([]); ctx.globalAlpha = 1.0;
 
     coins.forEach(c => drawCoin(lanes[c.lane], c.y));
     powerups.forEach(p => {
@@ -744,6 +801,7 @@ function draw() {
 
 function gameOver() {
     gameRunning = false; stopMusic(); playSFX(100, 30, "sawtooth", 0.4);
+    speakVoice("System Crash");
     sessionDuration = Math.floor((Date.now() - gameStartTime) / 1000);
     let finalScoreNum = Math.floor(score / 10);
     bankCoins += sessionCoins;
@@ -752,6 +810,7 @@ function gameOver() {
     if (finalScoreNum > highScore) { highScore = finalScoreNum; localStorage.setItem("cyber_runner_hs", highScore); }
 
     document.getElementById("finalScore").innerText = finalScoreNum;
+    document.getElementById("finalLevel").innerText = currentLevel;
     document.getElementById("gainedCoins").innerText = sessionCoins;
     document.getElementById("survivedTime").innerText = sessionDuration;
     document.getElementById("bestScore").innerText = highScore;
@@ -764,7 +823,7 @@ openMenu();
 
 if ('serviceWorker' in navigator) {
     const swCode = `
-        const CACHE_NAME = 'cyber-runner-v2';
+        const CACHE_NAME = 'cyber-runner-v3';
         self.addEventListener('install', (e) => {
             e.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(['./', './index.html'])));
         });
