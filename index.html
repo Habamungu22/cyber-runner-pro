@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CYBER RUNNER PRO - Complete Edition</title>
+    <title>CYBER RUNNER PRO - Conçu par Habamungu Haba</title>
     
     <meta name="theme-color" content="#00f3ff">
     <meta name="mobile-web-app-capable" content="yes">
@@ -89,7 +89,7 @@
         }
 
         h1 { font-size: 24px; color: var(--neon-blue); margin: 0; text-shadow: 0 0 15px var(--neon-blue); }
-        .brand { color: var(--neon-yellow); font-family: monospace; font-size: 11px; margin-bottom: 12px; }
+        .brand { color: var(--neon-yellow); font-family: monospace; font-size: 12px; font-weight: bold; margin-top: 4px; margin-bottom: 12px; letter-spacing: 1px; }
 
         .tabs { display: flex; gap: 10px; margin-bottom: 12px; width: 100%; }
 
@@ -168,7 +168,7 @@
 
     <div id="startScreen" class="overlay">
         <h1>Cyber Runner Pro</h1>
-        <div class="brand">HABA TECHNOLOGIE</div>
+        <div class="brand">Conçu par Haba technologie</div>
 
         <div style="font-family: monospace; color: var(--neon-green); font-size: 14px; margin-bottom: 10px;">
             💰 SOLDE : <span id="totalCoins">0</span> PIÈCES
@@ -187,7 +187,7 @@
 
     <div id="gameOverScreen" class="overlay hidden">
         <h1 style="color: var(--neon-pink);">CRASH DÉTECTÉ</h1>
-        <div class="brand">HABA TECHNOLOGIE</div>
+        <div class="brand">Conçu par Haba technologie</div>
         <p style="color: #a0aab8; text-align: center; line-height: 1.8;">
             Score Session : <b id="finalScore" style="color: #fff">0</b><br>
             Pièces Gagnées : <b id="gainedCoins" style="color: var(--neon-green)">0</b><br>
@@ -414,6 +414,14 @@ function updateUI() {
     document.getElementById("multiplier").innerText = `x${multiplier}`;
 }
 
+function checkQuests() {
+    let now = Math.floor((Date.now() - gameStartTime) / 1000);
+    if (sessionCoins >= 30) questState.c30.done = true;
+    if (now >= 45) questState.t45.done = true;
+    if (shieldCollectedInSession || hasShield) questState.s1.done = true;
+    saveProgress();
+}
+
 function update() {
     if (!gameRunning) return;
 
@@ -424,6 +432,8 @@ function update() {
     if (turboTimer > 0) turboTimer--;
     if (doubleCoinsTimer > 0) doubleCoinsTimer--;
     updateUI();
+
+    checkQuests();
 
     document.getElementById("score").innerText = Math.floor(score / 10);
     document.getElementById("coins").innerText = sessionCoins;
@@ -457,7 +467,7 @@ function update() {
                 addParticles(lanes[obs.lane], obs.y, "#ff0055", 12);
                 obstacles.splice(i, 1);
             } else if (obs.type === 'laser' && isJumping && jumpHeight > 25) {
-                // Saut réussi au-dessus du laser !
+                // Saut réussi au-dessus du laser
             } else if (!isJumping || jumpHeight < 30) {
                 if (hasShield) {
                     hasShield = false; multiplier = 1;
@@ -574,12 +584,6 @@ function draw() {
     ctx.globalAlpha = 1.0;
 
     drawVectorCar(playerX, playerY, CARS[equippedCar].color, true);
-}
-
-function checkQuests() {
-    if (sessionCoins >= 30) questState.c30.done = true;
-    if (sessionDuration >= 45) questState.t45.done = true;
-    if (shieldCollectedInSession) questState.s1.done = true;
 }
 
 function gameOver() {
