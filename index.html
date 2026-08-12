@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>CYBER RUNNER PRO - Conçu par Haba technologie</title>
     
+    <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#00f3ff">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -35,7 +36,7 @@
         }
 
         #game-container {
-            position: relative; box-shadow: 0 0 50px var(--city-color);
+            position: relative; box-shadow: 0 0 20px var(--city-color);
             border-radius: 12px; overflow: hidden; border: 2px solid var(--city-color);
             width: 450px; height: 100%; max-height: 750px; max-width: 100vw;
             display: flex; flex-direction: column; background: var(--bg);
@@ -47,8 +48,7 @@
         /* SCROLLBAR CYBERPUNK */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: rgba(5, 10, 20, 0.8); border-radius: 4px; }
-        ::-webkit-scrollbar-thumb { background: var(--neon-blue); border-radius: 4px; box-shadow: 0 0 8px var(--neon-blue); }
-        ::-webkit-scrollbar-thumb:hover { background: var(--neon-pink); }
+        ::-webkit-scrollbar-thumb { background: var(--neon-blue); border-radius: 4px; }
 
         .hud {
             position: absolute; top: 15px; left: 15px; right: 15px;
@@ -85,9 +85,7 @@
             background: var(--panel-bg); border: 1px solid rgba(0, 243, 255, 0.4);
             color: var(--neon-blue); padding: 8px 10px; border-radius: 6px;
             cursor: pointer; font-family: monospace; font-size: 11px; font-weight: bold;
-            transition: all 0.2s ease;
         }
-        .icon-btn:hover { border-color: var(--neon-blue); box-shadow: 0 0 10px var(--neon-blue); }
 
         .touch-controls {
             position: absolute; bottom: 20px; left: 0; right: 0;
@@ -98,12 +96,10 @@
             background: rgba(0, 243, 255, 0.15); border: 2px solid var(--neon-blue);
             color: var(--neon-blue); width: 68px; height: 68px; border-radius: 50%;
             display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: bold;
-            cursor: pointer; backdrop-filter: blur(4px); transition: transform 0.1s;
+            cursor: pointer; backdrop-filter: blur(4px);
         }
 
-        .touch-btn:active {
-            background: rgba(0, 243, 255, 0.5); transform: scale(0.92);
-        }
+        .touch-btn:active { background: rgba(0, 243, 255, 0.5); transform: scale(0.92); }
 
         .overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
@@ -114,19 +110,12 @@
 
         h1 {
             font-size: 26px; color: #fff; margin: 0; text-transform: uppercase;
-            text-shadow: 0 0 8px var(--neon-blue), 0 0 20px var(--neon-blue);
-            letter-spacing: 1.5px; animation: glow 2s infinite alternate;
-        }
-
-        @keyframes glow {
-            0% { text-shadow: 0 0 5px var(--neon-blue), 0 0 15px var(--neon-blue); }
-            100% { text-shadow: 0 0 10px var(--neon-blue), 0 0 30px var(--neon-blue), 0 0 40px var(--neon-blue); }
+            text-shadow: 0 0 8px var(--neon-blue); letter-spacing: 1.5px;
         }
 
         .brand {
             color: var(--neon-yellow); font-family: monospace; font-size: 11px;
             font-weight: bold; margin-top: 4px; margin-bottom: 12px; letter-spacing: 1px;
-            text-shadow: 0 0 5px var(--neon-yellow);
         }
 
         .tabs { display: flex; gap: 10px; margin-bottom: 12px; width: 100%; }
@@ -134,12 +123,12 @@
         .tab-btn {
             flex: 1; background: rgba(10, 15, 28, 0.6); border: 1px solid rgba(0, 243, 255, 0.2);
             color: #8a99ad; padding: 10px; font-family: monospace; font-size: 12px; font-weight: bold;
-            cursor: pointer; border-radius: 6px; text-align: center; transition: all 0.2s ease;
+            cursor: pointer; border-radius: 6px; text-align: center;
         }
 
         .tab-btn.active {
             border-color: var(--neon-blue); color: var(--neon-blue);
-            background: rgba(0, 243, 255, 0.1); box-shadow: 0 0 12px rgba(0, 243, 255, 0.2);
+            background: rgba(0, 243, 255, 0.1);
         }
 
         .content-container {
@@ -151,69 +140,34 @@
             background: linear-gradient(135deg, rgba(15, 22, 41, 0.9) 0%, rgba(8, 12, 24, 0.9) 100%);
             border: 1px solid rgba(0, 243, 255, 0.2); border-radius: 8px; padding: 12px;
             display: flex; align-items: center; justify-content: space-between; gap: 10px;
-            transition: all 0.2s ease; position: relative; overflow: hidden;
-        }
-
-        .shop-item:hover, .quest-card:hover {
-            border-color: rgba(0, 243, 255, 0.5); transform: translateY(-1px);
         }
 
         .shop-item.active {
-            border-color: var(--neon-blue); box-shadow: 0 0 10px rgba(0, 243, 255, 0.3);
+            border-color: var(--neon-blue);
             background: linear-gradient(135deg, rgba(0, 243, 255, 0.15) 0%, rgba(8, 12, 24, 0.9) 100%);
         }
 
-        .car-preview {
-            width: 26px; height: 40px; border-radius: 5px; border: 2px solid;
-            flex-shrink: 0; box-shadow: 0 0 8px currentColor;
-        }
+        .car-preview { width: 26px; height: 40px; border-radius: 5px; border: 2px solid; flex-shrink: 0; }
 
         .btn-small {
             background: rgba(5, 10, 20, 0.8); border: 1px solid var(--neon-green);
             color: var(--neon-green); padding: 7px 12px; border-radius: 5px;
             cursor: pointer; font-family: monospace; font-size: 11px; font-weight: bold;
-            transition: all 0.2s ease;
         }
 
-        .btn-small:hover:not(:disabled) {
-            background: var(--neon-green); color: #000; box-shadow: 0 0 10px var(--neon-green);
-        }
-
-        .btn-small:disabled {
-            border-color: #334155; color: #64748b; background: transparent; cursor: not-allowed;
-        }
-
-        .btn-small.claimable {
-            background: var(--neon-green); color: #000; box-shadow: 0 0 12px var(--neon-green);
-            animation: pulse 1s infinite alternate;
-        }
-
-        @keyframes pulse {
-            from { transform: scale(1); }
-            to { transform: scale(1.05); }
-        }
+        .btn-small:disabled { border-color: #334155; color: #64748b; background: transparent; }
 
         .btn {
-            background: linear-gradient(90deg, rgba(255,0,85,0.1) 0%, rgba(255,0,85,0.3) 50%, rgba(255,0,85,0.1) 100%);
-            border: 2px solid var(--neon-pink); color: #fff;
+            background: rgba(255,0,85,0.2); border: 2px solid var(--neon-pink); color: #fff;
             padding: 14px 30px; font-size: 15px; font-family: monospace; font-weight: bold;
-            cursor: pointer; border-radius: 8px; box-shadow: 0 0 15px rgba(255, 0, 85, 0.4);
-            width: 100%; letter-spacing: 1px; transition: all 0.2s ease; text-transform: uppercase;
-        }
-
-        .btn:hover {
-            background: var(--neon-pink); color: #000; box-shadow: 0 0 25px var(--neon-pink);
+            cursor: pointer; border-radius: 8px; width: 100%; letter-spacing: 1px; text-transform: uppercase;
         }
 
         .btn-install {
-            background: linear-gradient(90deg, rgba(0,255,102,0.2) 0%, rgba(0,255,102,0.4) 100%);
-            border: 1px solid var(--neon-green); color: var(--neon-green);
+            background: rgba(0,255,106,0.2); border: 1px solid var(--neon-green); color: var(--neon-green);
             padding: 10px 20px; font-size: 12px; font-family: monospace; font-weight: bold;
-            cursor: pointer; border-radius: 6px; box-shadow: 0 0 10px rgba(0, 255, 106, 0.3);
-            width: 100%; margin-bottom: 10px; display: none; text-align: center;
+            cursor: pointer; border-radius: 6px; width: 100%; margin-bottom: 10px; display: none; text-align: center;
         }
-
-        .btn-install:hover { background: var(--neon-green); color: #000; }
 
         .hidden { display: none !important; }
     </style>
@@ -256,7 +210,7 @@
 
         <button id="installBtn" class="btn-install" onclick="installApp()">📲 TÉLÉCHARGER L'APPLICATION</button>
 
-        <div style="font-family: monospace; color: var(--neon-green); font-size: 13px; margin-bottom: 12px; text-shadow: 0 0 5px var(--neon-green);">
+        <div style="font-family: monospace; color: var(--neon-green); font-size: 13px; margin-bottom: 12px;">
             💰 SOLDE : <span id="totalCoins">0</span> PIÈCES
         </div>
 
@@ -276,14 +230,14 @@
         <h1>PAUSE</h1>
         <div class="brand">Conçu par Haba technologie</div>
         <div style="display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 250px; margin-top: 20px;">
-            <button class="btn" style="border-color: var(--neon-blue); box-shadow: 0 0 15px rgba(0,243,255,0.4);" onclick="togglePause()">REPRENDRE</button>
+            <button class="btn" style="border-color: var(--neon-blue);" onclick="togglePause()">REPRENDRE</button>
             <button class="btn" onclick="quitToMenu()">MENU PRINCIPAL</button>
         </div>
     </div>
 
     <!-- Game Over -->
     <div id="gameOverScreen" class="overlay hidden">
-        <h1 style="color: var(--neon-pink); text-shadow: 0 0 15px var(--neon-pink);">CRASH DÉTECTÉ</h1>
+        <h1 style="color: var(--neon-pink);">CRASH DÉTECTÉ</h1>
         <div class="brand">Conçu par Haba technologie</div>
         <p style="color: #a0aab8; text-align: center; line-height: 1.8; font-family: monospace; margin: 15px 0;">
             Score Session : <b id="finalScore" style="color: #fff">0</b><br>
@@ -313,12 +267,11 @@ const QUESTS_DEF = [
     { id: "s1", title: "Invincible", desc: "Obtenir 1 Bouclier", reward: 40 }
 ];
 
-// COULEURS DES NIVEAUX DE VILLE
 const LEVEL_THEMES = [
-    { level: 1, color: "#00f3ff", name: "Neon Cyan" },
-    { level: 2, color: "#a100ff", name: "Purple District" },
-    { level: 3, color: "#ff0055", name: "Red Warning Zone" },
-    { level: 4, color: "#00ff66", name: "Matrix Overdrive" }
+    { level: 1, color: "#00f3ff" },
+    { level: 2, color: "#a100ff" },
+    { level: 3, color: "#ff0055" },
+    { level: 4, color: "#00ff66" }
 ];
 
 let bankCoins = parseInt(localStorage.getItem("cyber_bank_coins")) || 0;
@@ -333,6 +286,7 @@ let questState = JSON.parse(localStorage.getItem("cyber_quests_state")) || {
 let isPaused = false;
 let deferredPrompt = null;
 const installBtn = document.getElementById("installBtn");
+const isMobile = /Mobi|Android|iPhone/i.test(navigator.userAgent);
 
 window.addEventListener("beforeinstallprompt", (e) => {
     e.preventDefault();
@@ -350,13 +304,13 @@ function installApp() {
     }
 }
 
-// SYNTHÈSE VOCALE CYBERPUNK (VOIX)
+// SYNTHÈSE VOCALE - DÉSACTIVÉE SUR MOBILE POUR ÉVITER LES LAGS
 function speakVoice(text) {
-    if (musicMuted || !('speechSynthesis' in window)) return;
-    window.speechSynthesis.cancel(); // Stoppe la voix précédente
+    if (musicMuted || isMobile || !('speechSynthesis' in window)) return;
+    window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = 'en-US';
-    utterance.pitch = 0.8; // Voix cyberpunk légèrement grave
+    utterance.pitch = 0.8;
     utterance.rate = 1.1;
     window.speechSynthesis.speak(utterance);
 }
@@ -388,7 +342,7 @@ function playSynthwaveNote() {
     const gain = audioCtx.createGain();
     osc.type = "sawtooth";
     osc.frequency.setValueAtTime(bassNotes[musicStep % bassNotes.length], audioCtx.currentTime);
-    gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
+    gain.gain.setValueAtTime(0.03, audioCtx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.12);
     osc.connect(gain); gain.connect(audioCtx.destination);
     osc.start(); osc.stop(audioCtx.currentTime + 0.12);
@@ -405,7 +359,7 @@ function playSFX(freq1, freq2, type="sine", duration=0.2) {
     osc.type = type;
     osc.frequency.setValueAtTime(freq1, audioCtx.currentTime);
     if (freq2) osc.frequency.exponentialRampToValueAtTime(freq2, audioCtx.currentTime + duration);
-    gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+    gain.gain.setValueAtTime(0.06, audioCtx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
     osc.connect(gain); gain.connect(audioCtx.destination);
     osc.start(); osc.stop(audioCtx.currentTime + duration);
@@ -430,20 +384,12 @@ function togglePause() {
     if (!gameRunning) return;
     isPaused = !isPaused;
     document.getElementById("pauseScreen").classList.toggle("hidden", !isPaused);
-    if (isPaused) {
-        stopMusic();
-    } else {
-        startMusic();
-        loop();
-    }
+    if (isPaused) { stopMusic(); } else { startMusic(); loop(); }
 }
 
 function quitToMenu() {
-    isPaused = false;
-    gameRunning = false;
-    stopMusic();
-    document.getElementById("pauseScreen").classList.add("hidden");
-    openMenu();
+    isPaused = false; gameRunning = false; stopMusic();
+    document.getElementById("pauseScreen").classList.add("hidden"); openMenu();
 }
 
 function switchTab(tab) {
@@ -481,7 +427,7 @@ function renderQuests() {
     QUESTS_DEF.forEach(q => {
         const st = questState[q.id];
         let btnHTML = st.claimed ? `<button class="btn-small" disabled>REÇU</button>` :
-            (st.done ? `<button class="btn-small claimable" onclick="claimQuest('${q.id}')">RÉCLAMER</button>` :
+            (st.done ? `<button class="btn-small" style="background:var(--neon-green); color:#000" onclick="claimQuest('${q.id}')">RÉCLAMER</button>` :
             `<button class="btn-small" disabled>EN COURS</button>`);
 
         view.innerHTML += `
@@ -532,13 +478,14 @@ function openMenu() {
 
 function triggerJump() { if (!isJumping && gameRunning && !isPaused) { isJumping = true; jumpTimer = 0; playSFX(200, 500, "square", 0.15); } }
 
-function addParticles(x, y, color, count = 8) {
+function addParticles(x, y, color, count = 5) {
+    if (isMobile) count = 3; // Réduit le nombre de particules sur mobile
     for (let i = 0; i < count; i++) {
         particles.push({
             x: x, y: y,
-            vx: (Math.random() - 0.5) * 6,
-            vy: (Math.random() - 0.5) * 6,
-            life: 20, maxLife: 20, color: color
+            vx: (Math.random() - 0.5) * 5,
+            vy: (Math.random() - 0.5) * 5,
+            life: 15, maxLife: 15, color: color
         });
     }
 }
@@ -583,11 +530,10 @@ function updateDifficultyAndCity() {
         currentCityColor = LEVEL_THEMES[currentLevel - 1].color;
         document.documentElement.style.setProperty('--city-color', currentCityColor);
         speakVoice(`Level ${currentLevel}`);
-        addParticles(canvas.width / 2, canvas.height / 2, currentCityColor, 25);
+        addParticles(canvas.width / 2, canvas.height / 2, currentCityColor, 15);
     }
 
-    // Augmentation dynamique de la densité du trafic
-    obstacleSpawnRate = 0.022 + (currentLevel * 0.007);
+    obstacleSpawnRate = 0.022 + (currentLevel * 0.006);
     document.getElementById("level").innerText = currentLevel;
 }
 
@@ -635,7 +581,7 @@ function update() {
     let currentSpeed = turboTimer > 0 ? speed * 1.4 : speed;
     score += multiplier;
     
-    if (speed < 8.0) speed += 0.0004;
+    if (speed < 7.5) speed += 0.0003;
 
     if (magnetTimer > 0) magnetTimer--;
     if (turboTimer > 0) turboTimer--;
@@ -656,7 +602,6 @@ function update() {
         if (jumpTimer >= Math.PI) { isJumping = false; jumpHeight = 0; }
     }
 
-    // Trafic et obstacles dynamiques
     if (Math.random() < obstacleSpawnRate) obstacles.push({ lane: Math.floor(Math.random() * 3), y: -80, type: Math.random() < 0.25 ? 'laser' : 'car' });
     if (Math.random() < 0.025) coins.push({ lane: Math.floor(Math.random() * 3), y: -60 });
     if (Math.random() < 0.006) {
@@ -674,14 +619,14 @@ function update() {
         let obs = obstacles[i]; obs.y += currentSpeed;
         if (Math.abs(playerX - lanes[obs.lane]) < 35 && Math.abs(playerY - obs.y) < 50) {
             if (turboTimer > 0) {
-                addParticles(lanes[obs.lane], obs.y, "#ff0055", 12);
+                addParticles(lanes[obs.lane], obs.y, "#ff0055", 8);
                 obstacles.splice(i, 1);
             } else if (obs.type === 'laser' && isJumping && jumpHeight > 25) {
                 // Saut réussi
             } else if (!isJumping || jumpHeight < 30) {
                 if (hasShield) {
                     hasShield = false; multiplier = 1;
-                    addParticles(lanes[obs.lane], obs.y, "#00f3ff", 10);
+                    addParticles(lanes[obs.lane], obs.y, "#00f3ff", 8);
                     obstacles.splice(i, 1); playSFX(300, 150, "sawtooth", 0.2);
                     speakVoice("Shield Down");
                 } else { gameOver(); }
@@ -696,7 +641,7 @@ function update() {
             if (p.type === 'magnet') { magnetTimer = 360; speakVoice("Magnet Activated"); }
             if (p.type === 'turbo') { turboTimer = 180; speakVoice("Turbo Activated"); }
             if (p.type === 'double') { doubleCoinsTimer = 360; speakVoice("Double Coins"); }
-            addParticles(lanes[p.lane], p.y, "#ffe600", 8);
+            addParticles(lanes[p.lane], p.y, "#ffe600", 6);
             playSFX(400, 800, "triangle", 0.25); powerups.splice(i, 1);
         } else if (p.y > canvas.height + 40) powerups.splice(i, 1);
     }
@@ -711,12 +656,13 @@ function update() {
         if (Math.abs(playerX - lanes[c.lane]) < 30 && Math.abs(playerY - c.y) < 35) {
             sessionCoins += (doubleCoinsTimer > 0 ? 2 : 1);
             if (sessionCoins % 10 === 0 && multiplier < 5) multiplier++;
-            addParticles(lanes[c.lane], c.y, "#ffe600", 6);
+            addParticles(lanes[c.lane], c.y, "#ffe600", 4);
             playSFX(900, 1200, "sine", 0.15); coins.splice(i, 1);
         } else if (c.y > canvas.height + 40) coins.splice(i, 1);
     }
 }
 
+// DESSIN OPTIMISÉ POUR MOBILE (SANS SHADOWBLUR TROP LOURD)
 function drawVectorCar(x, y, color, isPlayer = true) {
     ctx.save();
     ctx.translate(x, y - (isPlayer ? jumpHeight : 0));
@@ -728,20 +674,19 @@ function drawVectorCar(x, y, color, isPlayer = true) {
     ctx.fillRect(-26, -30, 6, 16); ctx.fillRect(20, -30, 6, 16);
     ctx.fillRect(-26, 18, 6, 16); ctx.fillRect(20, 18, 6, 16);
 
-    ctx.fillStyle = color; ctx.shadowColor = color; ctx.shadowBlur = 12;
+    ctx.fillStyle = color;
     ctx.beginPath(); ctx.roundRect(-20, -40, 40, 80, 8); ctx.fill();
 
-    ctx.fillStyle = "#090d16"; ctx.shadowBlur = 0;
+    ctx.fillStyle = "#090d16";
     ctx.beginPath(); ctx.roundRect(-14, -18, 28, 36, 4); ctx.fill();
 
     ctx.fillStyle = isPlayer ? "#00f3ff" : "#ff0055";
     ctx.fillRect(-10, -10, 20, 10);
 
     if (isPlayer) {
-        ctx.fillStyle = "#fff"; ctx.shadowColor = "#fff"; ctx.shadowBlur = 8;
+        ctx.fillStyle = "#fff";
         ctx.fillRect(-16, -38, 8, 4); ctx.fillRect(8, -38, 8, 4);
-
-        ctx.fillStyle = "#ff0055"; ctx.shadowColor = "#ff0055"; ctx.shadowBlur = 10;
+        ctx.fillStyle = "#ff0055";
         ctx.fillRect(-14, 38, 8, 4); ctx.fillRect(6, 38, 8, 4);
     } else {
         ctx.fillStyle = "#ff0055";
@@ -752,7 +697,7 @@ function drawVectorCar(x, y, color, isPlayer = true) {
 
 function drawLaserBarrier(x, y) {
     ctx.save(); ctx.translate(x, y);
-    ctx.strokeStyle = "#ff0055"; ctx.lineWidth = 6; ctx.shadowColor = "#ff0055"; ctx.shadowBlur = 15;
+    ctx.strokeStyle = "#ff0055"; ctx.lineWidth = 5;
     ctx.beginPath(); ctx.moveTo(-35, 0); ctx.lineTo(35, 0); ctx.stroke();
     ctx.fillStyle = "#fff"; ctx.fillRect(-40, -10, 8, 20); ctx.fillRect(32, -10, 8, 20);
     ctx.restore();
@@ -760,7 +705,7 @@ function drawLaserBarrier(x, y) {
 
 function drawCoin(x, y) {
     ctx.save(); ctx.translate(x, y);
-    ctx.fillStyle = "#ffe600"; ctx.shadowColor = "#ffe600"; ctx.shadowBlur = 10;
+    ctx.fillStyle = "#ffe600";
     ctx.beginPath(); ctx.arc(0, 0, 12, 0, Math.PI * 2); ctx.fill();
     ctx.fillStyle = "#000"; ctx.font = "bold 12px monospace"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
     ctx.fillText("💰", 0, 0); ctx.restore();
@@ -769,7 +714,6 @@ function drawCoin(x, y) {
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // LIGNES DE ROUTE DYNAMIQUES AVEC LA COULEUR DU NIVEAU
     ctx.strokeStyle = currentCityColor; ctx.lineWidth = 2;
     ctx.globalAlpha = 0.3;
     ctx.setLineDash([20, 20]); ctx.lineDashOffset = -score * 2;
@@ -821,18 +765,11 @@ function loop() { if (gameRunning && !isPaused) { update(); draw(); requestAnima
 
 openMenu();
 
+// ENREGISTREMENT DU SERVICE WORKER (PWA)
 if ('serviceWorker' in navigator) {
-    const swCode = `
-        const CACHE_NAME = 'cyber-runner-v3';
-        self.addEventListener('install', (e) => {
-            e.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(['./', './index.html'])));
-        });
-        self.addEventListener('fetch', (e) => {
-            e.respondWith(caches.match(e.request).then((res) => res || fetch(e.request)));
-        });
-    `;
-    const blob = new Blob([swCode], { type: 'application/javascript' });
-    navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(() => {});
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(() => {});
+    });
 }
 </script>
 </body>
