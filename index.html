@@ -17,7 +17,7 @@
             --neon-pink: #ff0055;
             --neon-yellow: #ffe600;
             --neon-green: #00ff66;
-            --panel-bg: rgba(10, 15, 28, 0.85);
+            --panel-bg: rgba(10, 15, 28, 0.95);
             --city-color: #00f3ff;
         }
 
@@ -36,11 +36,11 @@
         }
 
         #game-container {
-            position: relative; box-shadow: 0 0 20px var(--city-color);
+            position: relative; box-shadow: 0 0 10px var(--city-color);
             border-radius: 12px; overflow: hidden; border: 2px solid var(--city-color);
             width: 450px; height: 100%; max-height: 750px; max-width: 100vw;
             display: flex; flex-direction: column; background: var(--bg);
-            transition: border-color 0.8s ease, box-shadow 0.8s ease;
+            transition: border-color 0.8s ease;
         }
 
         canvas { display: block; background: #050714; width: 100%; height: 100%; }
@@ -58,7 +58,7 @@
 
         .hud-card {
             background: var(--panel-bg); padding: 8px 10px; border-radius: 6px;
-            border: 1px solid rgba(0, 243, 255, 0.3); backdrop-filter: blur(4px);
+            border: 1px solid rgba(0, 243, 255, 0.3);
         }
 
         .hud-controls { display: flex; gap: 6px; }
@@ -71,7 +71,7 @@
 
         .badge {
             background: var(--panel-bg); padding: 4px 8px; border-radius: 4px;
-            font-weight: bold; border: 1px solid; display: none; backdrop-filter: blur(4px);
+            font-weight: bold; border: 1px solid; display: none;
         }
 
         .badge.active { display: block; }
@@ -92,17 +92,17 @@
         }
 
         .touch-btn {
-            background: rgba(0, 243, 255, 0.15); border: 2px solid var(--neon-blue);
+            background: rgba(0, 243, 255, 0.2); border: 2px solid var(--neon-blue);
             color: var(--neon-blue); width: 68px; height: 68px; border-radius: 50%;
             display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: bold;
-            cursor: pointer; backdrop-filter: blur(4px);
+            cursor: pointer;
         }
 
         .touch-btn:active { background: rgba(0, 243, 255, 0.5); transform: scale(0.92); }
 
         .overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle at center, #0a0f24 0%, #03050c 100%) !important;
+            background: #060a17 !important;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             z-index: 10; padding: 20px;
         }
@@ -120,14 +120,14 @@
         .tabs { display: flex; gap: 6px; margin-bottom: 12px; width: 100%; }
 
         .tab-btn {
-            flex: 1; background: rgba(10, 15, 28, 0.6); border: 1px solid rgba(0, 243, 255, 0.2);
+            flex: 1; background: rgba(10, 15, 28, 0.8); border: 1px solid rgba(0, 243, 255, 0.2);
             color: #8a99ad; padding: 8px 4px; font-family: monospace; font-size: 10px; font-weight: bold;
             cursor: pointer; border-radius: 6px; text-align: center;
         }
 
         .tab-btn.active {
             border-color: var(--neon-blue); color: var(--neon-blue);
-            background: rgba(0, 243, 255, 0.1);
+            background: rgba(0, 243, 255, 0.15);
         }
 
         .content-container {
@@ -136,14 +136,14 @@
         }
 
         .shop-item, .quest-card, .upgrade-card, .leader-item {
-            background: linear-gradient(135deg, rgba(15, 22, 41, 0.9) 0%, rgba(8, 12, 24, 0.9) 100%);
+            background: #0a0f1d;
             border: 1px solid rgba(0, 243, 255, 0.2); border-radius: 8px; padding: 10px;
             display: flex; align-items: center; justify-content: space-between; gap: 10px;
         }
 
         .shop-item.active {
             border-color: var(--neon-blue);
-            background: linear-gradient(135deg, rgba(0, 243, 255, 0.15) 0%, rgba(8, 12, 24, 0.9) 100%);
+            background: rgba(0, 243, 255, 0.15);
         }
 
         .car-preview { width: 24px; height: 38px; border-radius: 5px; border: 2px solid; flex-shrink: 0; }
@@ -157,7 +157,7 @@
         .btn-small:disabled { border-color: #334155; color: #64748b; background: transparent; }
 
         .btn {
-            background: rgba(255,0,85,0.2); border: 2px solid var(--neon-pink); color: #fff;
+            background: rgba(255,0,85,0.3); border: 2px solid var(--neon-pink); color: #fff;
             padding: 12px 24px; font-size: 14px; font-family: monospace; font-weight: bold;
             cursor: pointer; border-radius: 8px; width: 100%; letter-spacing: 1px; text-transform: uppercase;
         }
@@ -215,7 +215,6 @@
 
         <div class="tabs">
             <button class="tab-btn active" id="tabGarage" onclick="switchTab('garage')">GARAGE</button>
-
             <button class="tab-btn" id="tabUpgrades" onclick="switchTab('upgrades')">BOOSTS</button>
             <button class="tab-btn" id="tabQuests" onclick="switchTab('quests')">MISSIONS</button>
             <button class="tab-btn" id="tabScores" onclick="switchTab('scores')">TOP 5</button>
@@ -256,9 +255,21 @@
 
 <script>
 const canvas = document.getElementById("canvas");
-const ctx = canvas.getContext("2d");
+// OPTIMISATION CANVAS : Rendu ultra-rapide sans fond transparent
+const ctx = canvas.getContext("2d", { alpha: false });
+const isMobile = /Mobi|Android|iPhone/i.test(navigator.userAgent);
 
-// VIBRATION HAPTIQUE (MOBILE)
+// AJUSTEMENT RESOLUTION MOBILE
+function resizeCanvas() {
+    const dpr = Math.min(window.devicePixelRatio || 1, isMobile ? 1.2 : 2);
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.scale(dpr, dpr);
+}
+window.addEventListener('resize', resizeCanvas);
+setTimeout(resizeCanvas, 100);
+
 function vibrate(ms = 30) {
     if ("vibrate" in navigator) {
         try { navigator.vibrate(ms); } catch (e) {}
@@ -290,12 +301,7 @@ let unlockedCars = JSON.parse(localStorage.getItem("cyber_unlocked_cars")) || [0
 let equippedCar = parseInt(localStorage.getItem("cyber_equipped_car")) || 0;
 let leaderBoard = JSON.parse(localStorage.getItem("cyber_leaderboard")) || [];
 
-let upgrades = JSON.parse(localStorage.getItem("cyber_upgrades")) || {
-    magnet: 1,
-    turbo: 1,
-    double: 1
-};
-
+let upgrades = JSON.parse(localStorage.getItem("cyber_upgrades")) || { magnet: 1, turbo: 1, double: 1 };
 let questState = JSON.parse(localStorage.getItem("cyber_quests_state")) || {
     c30: { done: false, claimed: false },
     t45: { done: false, claimed: false },
@@ -305,12 +311,9 @@ let questState = JSON.parse(localStorage.getItem("cyber_quests_state")) || {
 let isPaused = false;
 let deferredPrompt = null;
 const installBtn = document.getElementById("installBtn");
-const isMobile = /Mobi|Android|iPhone/i.test(navigator.userAgent);
 
 window.addEventListener("beforeinstallprompt", (e) => {
-    e.preventDefault();
-    deferredPrompt = e;
-    installBtn.style.display = "block";
+    e.preventDefault(); deferredPrompt = e; installBtn.style.display = "block";
 });
 
 function installApp() {
@@ -327,17 +330,12 @@ function speakVoice(text) {
     if (musicMuted || isMobile || !('speechSynthesis' in window)) return;
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'en-US';
-    utterance.pitch = 0.8;
-    utterance.rate = 1.1;
+    utterance.lang = 'en-US'; utterance.pitch = 0.8; utterance.rate = 1.1;
     window.speechSynthesis.speak(utterance);
 }
 
 const AudioCtx = window.AudioContext || window.webkitAudioContext;
-let audioCtx = null;
-let musicMuted = false;
-let musicInterval = null;
-let musicStep = 0;
+let audioCtx = null, musicMuted = false, musicInterval = null, musicStep = 0;
 
 function initAudio() {
     if (!audioCtx) audioCtx = new AudioCtx();
@@ -347,17 +345,14 @@ function initAudio() {
 function toggleMusic() {
     musicMuted = !musicMuted;
     document.getElementById("musicToggleBtn").innerText = musicMuted ? "🔇" : "🔊";
-    if (musicMuted) {
-        stopMusic();
-        if ('speechSynthesis' in window) window.speechSynthesis.cancel();
-    } else if (gameRunning && !isPaused) startMusic();
+    if (musicMuted) { stopMusic(); if ('speechSynthesis' in window) window.speechSynthesis.cancel(); }
+    else if (gameRunning && !isPaused) startMusic();
 }
 
 function playSynthwaveNote() {
     if (!audioCtx || musicMuted || !gameRunning || isPaused) return;
     const bassNotes = [110, 110, 130.81, 110, 146.83, 110, 130.81, 98.00];
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
+    const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
     osc.type = "sawtooth";
     osc.frequency.setValueAtTime(bassNotes[musicStep % bassNotes.length], audioCtx.currentTime);
     gain.gain.setValueAtTime(0.03, audioCtx.currentTime);
@@ -372,51 +367,37 @@ function stopMusic() { if (musicInterval) { clearInterval(musicInterval); musicI
 
 function playSFX(freq1, freq2, type="sine", duration=0.2) {
     if (!audioCtx || musicMuted) return;
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.type = type;
-    osc.frequency.setValueAtTime(freq1, audioCtx.currentTime);
+    const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
+    osc.type = type; osc.frequency.setValueAtTime(freq1, audioCtx.currentTime);
     if (freq2) osc.frequency.exponentialRampToValueAtTime(freq2, audioCtx.currentTime + duration);
-    gain.gain.setValueAtTime(0.06, audioCtx.currentTime);
+    gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
     osc.connect(gain); gain.connect(audioCtx.destination);
     osc.start(); osc.stop(audioCtx.currentTime + duration);
 }
 
 const lanes = [90, 225, 360];
-let currentLane = 1;
-let playerX = lanes[1], playerY = 540;
-
+let currentLane = 1, playerX = lanes[1], playerY = 540;
 let isJumping = false, jumpHeight = 0, jumpTimer = 0;
-let gameRunning = false, score = 0, multiplier = 1;
-let sessionCoins = 0, speed = 4.0, gameStartTime = 0, sessionDuration = 0, shieldCollectedInSession = false;
+let gameRunning = false, score = 0, multiplier = 1, sessionCoins = 0, speed = 4.0;
+let gameStartTime = 0, sessionDuration = 0, shieldCollectedInSession = false;
+let currentLevel = 1, obstacleSpawnRate = 0.025, currentCityColor = "#00f3ff";
+let nearMissCount = 0, floatingTexts = [];
 
-let currentLevel = 1;
-let obstacleSpawnRate = 0.025;
-let currentCityColor = "#00f3ff";
-
-let nearMissCount = 0;
-let floatingTexts = [];
-
-// BOSS & RAIN
-let bossActive = false;
-let bossY = -150;
-let bossHp = 100;
-let bossTimer = 0;
+let bossActive = false, bossY = -150, bossHp = 100, bossTimer = 0;
 let rainDrops = [];
-
 let hasShield = false, magnetTimer = 0, turboTimer = 0, doubleCoinsTimer = 0;
 let obstacles = [], coins = [], powerups = [], particles = [];
 
-for(let i=0; i<30; i++) {
-    rainDrops.push({ x: Math.random()*450, y: Math.random()*680, speed: 8 + Math.random()*6 });
+for(let i=0; i<(isMobile ? 12 : 25); i++) {
+    rainDrops.push({ x: Math.random()*450, y: Math.random()*680, speed: 7 + Math.random()*5 });
 }
 
 function togglePause() {
     if (!gameRunning) return;
     isPaused = !isPaused;
     document.getElementById("pauseScreen").classList.toggle("hidden", !isPaused);
-    if (isPaused) { stopMusic(); } else { startMusic(); loop(); }
+    if (isPaused) stopMusic(); else { startMusic(); lastTime = performance.now(); loop(lastTime); }
 }
 
 function quitToMenu() {
@@ -432,15 +413,13 @@ function switchTab(tab) {
 }
 
 function addFloatingText(text, x, y, color="#ffe600") {
-    floatingTexts.push({ text, x, y, alpha: 1.0, color });
+    if (floatingTexts.length < 5) floatingTexts.push({ text, x, y, alpha: 1.0, color });
 }
 
 function renderGarage() {
-    const view = document.getElementById("garageView");
-    view.innerHTML = "";
+    const view = document.getElementById("garageView"); view.innerHTML = "";
     CARS.forEach(car => {
-        const isUnlocked = unlockedCars.includes(car.id);
-        const isEquipped = equippedCar === car.id;
+        const isUnlocked = unlockedCars.includes(car.id), isEquipped = equippedCar === car.id;
         let btnHTML = isEquipped ? `<button class="btn-small" style="border-color: var(--neon-blue); color: var(--neon-blue);">ÉQUIPÉ</button>` :
             (isUnlocked ? `<button class="btn-small" onclick="equipCar(${car.id})">CHOISIR</button>` :
             `<button class="btn-small" style="border-color: var(--neon-yellow); color: var(--neon-yellow);" onclick="buyCar(${car.id})">${car.price} 💰</button>`);
@@ -458,17 +437,14 @@ function renderGarage() {
 }
 
 function renderUpgrades() {
-    const view = document.getElementById("upgradesView");
-    view.innerHTML = "";
+    const view = document.getElementById("upgradesView"); view.innerHTML = "";
     const list = [
         { key: 'magnet', name: '🧲 AIMANT', desc: 'Durée augmentée' },
         { key: 'turbo', name: '⚡ TURBO', desc: 'Durée augmentée' },
         { key: 'double', name: '2️⃣ PIÈCES x2', desc: 'Durée augmentée' }
     ];
-
     list.forEach(u => {
-        let lvl = upgrades[u.key];
-        let price = lvl * 60;
+        let lvl = upgrades[u.key], price = lvl * 60;
         let btn = lvl >= 5 ? `<button class="btn-small" disabled>MAX</button>` :
             `<button class="btn-small" onclick="buyUpgrade('${u.key}', ${price})">NIV ${lvl+1} (${price} 💰)</button>`;
 
@@ -484,8 +460,7 @@ function renderUpgrades() {
 }
 
 function renderQuests() {
-    const view = document.getElementById("questsView");
-    view.innerHTML = "";
+    const view = document.getElementById("questsView"); view.innerHTML = "";
     QUESTS_DEF.forEach(q => {
         const st = questState[q.id];
         let btnHTML = st.claimed ? `<button class="btn-small" disabled>REÇU</button>` :
@@ -505,10 +480,9 @@ function renderQuests() {
 }
 
 function renderScores() {
-    const view = document.getElementById("scoresView");
-    view.innerHTML = "";
+    const view = document.getElementById("scoresView"); view.innerHTML = "";
     if (leaderBoard.length === 0) {
-        view.innerHTML = `<div style="text-align:center; color:#8a99ad; font-size:11px; padding:10px;">AUCUN SCORE REGISTRÉ</div>`;
+        view.innerHTML = `<div style="text-align:center; color:#8a99ad; font-size:11px; padding:10px;">AUCUN SCORE ENREGISTRÉ</div>`;
         return;
     }
     leaderBoard.forEach((item, index) => {
@@ -533,8 +507,7 @@ function claimQuest(id) {
 
 function buyUpgrade(key, price) {
     if (bankCoins >= price && upgrades[key] < 5) {
-        bankCoins -= price;
-        upgrades[key]++;
+        bankCoins -= price; upgrades[key]++;
         saveProgress(); updateCoinsDisplay(); renderUpgrades(); playSFX(500, 900, "triangle", 0.3);
     }
 }
@@ -575,14 +548,15 @@ function openMenu() {
 
 function triggerJump() { if (!isJumping && gameRunning && !isPaused) { isJumping = true; jumpTimer = 0; playSFX(200, 500, "square", 0.15); } }
 
-function addParticles(x, y, color, count = 5) {
-    if (isMobile) count = 3;
+// OPTIMISATION PARTICULES : Nombre réduit pour éviter la perte de FPS
+function addParticles(x, y, color, count = 3) {
+    if (isMobile) count = 2;
+    if (particles.length > 15) particles.splice(0, count);
     for (let i = 0; i < count; i++) {
         particles.push({
-            x: x, y: y,
-            vx: (Math.random() - 0.5) * 5,
-            vy: (Math.random() - 0.5) * 5,
-            life: 15, maxLife: 15, color: color
+            x, y,
+            vx: (Math.random() - 0.5) * 4, vy: (Math.random() - 0.5) * 4,
+            life: 10, maxLife: 10, color
         });
     }
 }
@@ -595,29 +569,22 @@ window.addEventListener("keydown", e => {
     if (!gameRunning || isPaused) return;
     if (["ArrowLeft", "KeyA", "ArrowRight", "KeyD", "ArrowUp", "Space"].includes(e.code)) e.preventDefault();
     if (e.repeat) return;
-
     if (e.code === "ArrowLeft" || e.code === "KeyA") moveLeft();
     if (e.code === "ArrowRight" || e.code === "KeyD") moveRight();
     if (e.code === "Space" || e.code === "ArrowUp") triggerJump();
 });
-
-const btnLeft = document.getElementById("btnLeft");
-const btnRight = document.getElementById("btnRight");
-const btnJump = document.getElementById("btnJump");
 
 const addTouchHandler = (elem, callback) => {
     elem.addEventListener("touchstart", (e) => { e.preventDefault(); callback(); }, { passive: false });
     elem.addEventListener("mousedown", (e) => { e.preventDefault(); callback(); });
 };
 
-addTouchHandler(btnLeft, moveLeft);
-addTouchHandler(btnRight, moveRight);
-addTouchHandler(btnJump, triggerJump);
+addTouchHandler(document.getElementById("btnLeft"), moveLeft);
+addTouchHandler(document.getElementById("btnRight"), moveRight);
+addTouchHandler(document.getElementById("btnJump"), triggerJump);
 
 function updateDifficultyAndCity() {
-    let rawScore = Math.floor(score / 10);
-    let newLevel = 1;
-
+    let rawScore = Math.floor(score / 10), newLevel = 1;
     if (rawScore >= 1200) newLevel = 4;
     else if (rawScore >= 700) newLevel = 3;
     else if (rawScore >= 300) newLevel = 2;
@@ -627,16 +594,11 @@ function updateDifficultyAndCity() {
         currentCityColor = LEVEL_THEMES[currentLevel - 1].color;
         document.documentElement.style.setProperty('--city-color', currentCityColor);
         speakVoice(`Level ${currentLevel}`);
-        addParticles(canvas.width / 2, canvas.height / 2, currentCityColor, 15);
-        
-        bossActive = true;
-        bossY = -150;
-        bossHp = 100;
-        bossTimer = 300;
-        addFloatingText("WARNING: BOSS!", canvas.width / 2, 200, "#ff0055");
+        addParticles(canvas.width / 2, canvas.height / 2, currentCityColor, 8);
+        bossActive = true; bossY = -150; bossHp = 100; bossTimer = 300;
+        addFloatingText("WARNING: BOSS!", 225, 200, "#ff0055");
     }
-
-    obstacleSpawnRate = 0.022 + (currentLevel * 0.006);
+    obstacleSpawnRate = 0.022 + (currentLevel * 0.005);
     document.getElementById("level").innerText = currentLevel;
 }
 
@@ -652,16 +614,17 @@ function startGame() {
     currentCityColor = LEVEL_THEMES[0].color;
     document.documentElement.style.setProperty('--city-color', currentCityColor);
 
-    bossActive = false;
-    floatingTexts = [];
-    isJumping = false; jumpHeight = 0; magnetTimer = 0; turboTimer = 0; doubleCoinsTimer = 0;
+    bossActive = false; floatingTexts = []; isJumping = false; jumpHeight = 0;
+    magnetTimer = 0; turboTimer = 0; doubleCoinsTimer = 0;
     gameStartTime = Date.now(); shieldCollectedInSession = false; isPaused = false;
 
     hasShield = (equippedCar === 3);
     obstacles = []; coins = []; powerups = []; particles = [];
     gameRunning = true;
 
-    updateUI(); startMusic(); speakVoice("Engine Started"); loop();
+    updateUI(); startMusic(); speakVoice("Engine Started");
+    lastTime = performance.now();
+    loop(lastTime);
 }
 
 function updateUI() {
@@ -680,17 +643,18 @@ function checkQuests() {
     saveProgress();
 }
 
-function update() {
+function update(dt) {
     if (!gameRunning || isPaused) return;
 
-    let currentSpeed = turboTimer > 0 ? speed * 1.4 : speed;
-    score += multiplier;
+    let speedMultiplier = dt * 60; // Normalisation selon le taux de rafraîchissement
+    let currentSpeed = (turboTimer > 0 ? speed * 1.4 : speed) * speedMultiplier;
     
-    if (speed < 7.5) speed += 0.0003;
+    score += multiplier * speedMultiplier;
+    if (speed < 7.5) speed += 0.0003 * speedMultiplier;
 
-    if (magnetTimer > 0) magnetTimer--;
-    if (turboTimer > 0) turboTimer--;
-    if (doubleCoinsTimer > 0) doubleCoinsTimer--;
+    if (magnetTimer > 0) magnetTimer -= speedMultiplier;
+    if (turboTimer > 0) turboTimer -= speedMultiplier;
+    if (doubleCoinsTimer > 0) doubleCoinsTimer -= speedMultiplier;
 
     updateDifficultyAndCity();
     updateUI();
@@ -702,40 +666,35 @@ function update() {
     playerX = lanes[currentLane];
 
     if (isJumping) {
-        jumpTimer += 0.08;
+        jumpTimer += 0.08 * speedMultiplier;
         jumpHeight = Math.sin(jumpTimer) * 55;
         if (jumpTimer >= Math.PI) { isJumping = false; jumpHeight = 0; }
     }
 
-    // BOSS LOGIQUE
     if (bossActive) {
-        if (bossY < 80) bossY += 2;
-        bossTimer--;
-        if (bossTimer % 50 === 0) {
+        if (bossY < 80) bossY += 2 * speedMultiplier;
+        bossTimer -= speedMultiplier;
+        if (bossTimer % 50 <= 1) {
             let targetLane = Math.floor(Math.random() * 3);
             obstacles.push({ lane: targetLane, y: bossY + 40, type: 'laser' });
         }
         if (bossTimer <= 0) {
             bossActive = false;
-            addFloatingText("BOSS DEFEATED!", canvas.width / 2, 200, "#00ff66");
+            addFloatingText("BOSS DEFEATED!", 225, 200, "#00ff66");
             sessionCoins += 20;
         }
     }
 
-    // MÉTÉO PLUIE
     rainDrops.forEach(r => {
-        r.y += r.speed + currentSpeed;
+        r.y += (r.speed + currentSpeed) * 0.8;
         if (r.y > 680) { r.y = -10; r.x = Math.random() * 450; }
     });
 
     if (Math.random() < obstacleSpawnRate) {
-        let isSmart = Math.random() < 0.3;
         obstacles.push({ 
-            lane: Math.floor(Math.random() * 3), 
-            y: -80, 
+            lane: Math.floor(Math.random() * 3), y: -80, 
             type: Math.random() < 0.25 ? 'laser' : 'car',
-            isSmart: isSmart,
-            moved: false
+            isSmart: Math.random() < 0.3, moved: false
         });
     }
     if (Math.random() < 0.025) coins.push({ lane: Math.floor(Math.random() * 3), y: -60 });
@@ -746,13 +705,13 @@ function update() {
 
     for (let i = particles.length - 1; i >= 0; i--) {
         let p = particles[i];
-        p.x += p.vx; p.y += p.vy; p.life--;
+        p.x += p.vx * speedMultiplier; p.y += p.vy * speedMultiplier; p.life -= speedMultiplier;
         if (p.life <= 0) particles.splice(i, 1);
     }
 
     for (let i = floatingTexts.length - 1; i >= 0; i--) {
         let ft = floatingTexts[i];
-        ft.y -= 1; ft.alpha -= 0.02;
+        ft.y -= speedMultiplier; ft.alpha -= 0.02 * speedMultiplier;
         if (ft.alpha <= 0) floatingTexts.splice(i, 1);
     }
 
@@ -770,71 +729,61 @@ function update() {
         let distY = Math.abs(playerY - obs.y);
         let distX = Math.abs(playerX - lanes[obs.lane]);
 
-        // NEAR MISS DETECTION
         if (distY < 40 && distX > 30 && distX < 65 && !obs.nearMissed) {
-            obs.nearMissed = true;
-            nearMissCount++;
+            obs.nearMissed = true; nearMissCount++;
             addFloatingText("NEAR MISS! +50", playerX, playerY - 40, "#ffe600");
-            score += 500;
-            vibrate(15);
-            playSFX(800, 1200, "sine", 0.1);
+            score += 500; vibrate(15); playSFX(800, 1200, "sine", 0.1);
         }
 
         if (distX < 35 && distY < 50) {
             if (turboTimer > 0) {
-                addParticles(lanes[obs.lane], obs.y, "#ff0055", 8);
+                addParticles(lanes[obs.lane], obs.y, "#ff0055", 4);
                 obstacles.splice(i, 1);
             } else if (obs.type === 'laser' && isJumping && jumpHeight > 25) {
-                // Saut réussi
+                // Esquive saut
             } else if (!isJumping || jumpHeight < 30) {
                 if (hasShield) {
                     hasShield = false; multiplier = 1;
-                    addParticles(lanes[obs.lane], obs.y, "#00f3ff", 8);
+                    addParticles(lanes[obs.lane], obs.y, "#00f3ff", 4);
                     obstacles.splice(i, 1); playSFX(300, 150, "sawtooth", 0.2);
-                    vibrate(100);
-                    speakVoice("Shield Down");
+                    vibrate(100); speakVoice("Shield Down");
                 } else { gameOver(); }
             }
-        } else if (obs.y > canvas.height + 80) obstacles.splice(i, 1);
+        } else if (obs.y > 750) obstacles.splice(i, 1);
     }
 
     for (let i = powerups.length - 1; i >= 0; i--) {
         let p = powerups[i]; p.y += currentSpeed;
         if (Math.abs(playerX - lanes[p.lane]) < 35 && Math.abs(playerY - p.y) < 35) {
             let durBonus = (upgrades[p.type] || 1) * 60;
-            if (p.type === 'shield') { hasShield = true; shieldCollectedInSession = true; speakVoice("Shield Activated"); }
-            if (p.type === 'magnet') { magnetTimer = 360 + durBonus; speakVoice("Magnet Activated"); }
-            if (p.type === 'turbo') { turboTimer = 180 + durBonus; speakVoice("Turbo Activated"); }
-            if (p.type === 'double') { doubleCoinsTimer = 360 + durBonus; speakVoice("Double Coins"); }
-            addParticles(lanes[p.lane], p.y, "#ffe600", 6);
-            vibrate(40);
-            playSFX(400, 800, "triangle", 0.25); powerups.splice(i, 1);
-        } else if (p.y > canvas.height + 40) powerups.splice(i, 1);
+            if (p.type === 'shield') { hasShield = true; shieldCollectedInSession = true; speakVoice("Shield"); }
+            if (p.type === 'magnet') { magnetTimer = 360 + durBonus; speakVoice("Magnet"); }
+            if (p.type === 'turbo') { turboTimer = 180 + durBonus; speakVoice("Turbo"); }
+            if (p.type === 'double') { doubleCoinsTimer = 360 + durBonus; speakVoice("Double"); }
+            addParticles(lanes[p.lane], p.y, "#ffe600", 3);
+            vibrate(40); playSFX(400, 800, "triangle", 0.25); powerups.splice(i, 1);
+        } else if (p.y > 720) powerups.splice(i, 1);
     }
 
     let hasActiveMagnet = magnetTimer > 0 || equippedCar === 2;
     for (let i = coins.length - 1; i >= 0; i--) {
         let c = coins[i]; c.y += currentSpeed;
         if (hasActiveMagnet && Math.sqrt(Math.pow(playerX - lanes[c.lane], 2) + Math.pow(playerY - c.y, 2)) < 150) {
-            lanes[c.lane] += (playerX - lanes[c.lane]) * 0.12;
-            c.y += (playerY - c.y) * 0.12;
+            lanes[c.lane] += (playerX - lanes[c.lane]) * 0.12 * speedMultiplier;
+            c.y += (playerY - c.y) * 0.12 * speedMultiplier;
         }
         if (Math.abs(playerX - lanes[c.lane]) < 30 && Math.abs(playerY - c.y) < 35) {
             sessionCoins += (doubleCoinsTimer > 0 ? 2 : 1);
             if (sessionCoins % 10 === 0 && multiplier < 5) multiplier++;
-            addParticles(lanes[c.lane], c.y, "#ffe600", 4);
-            vibrate(20);
-            playSFX(900, 1200, "sine", 0.15); coins.splice(i, 1);
-        } else if (c.y > canvas.height + 40) coins.splice(i, 1);
+            addParticles(lanes[c.lane], c.y, "#ffe600", 2);
+            vibrate(20); playSFX(900, 1200, "sine", 0.15); coins.splice(i, 1);
+        } else if (c.y > 720) coins.splice(i, 1);
     }
 }
 
 function drawVectorCar(x, y, color, isPlayer = true) {
     ctx.save();
     ctx.translate(x, y - (isPlayer ? jumpHeight : 0));
-
-    ctx.fillStyle = "rgba(0, 0, 0, 0.4)";
-    ctx.beginPath(); ctx.ellipse(0, 45 + (isPlayer ? jumpHeight : 0), 22, 8, 0, 0, Math.PI * 2); ctx.fill();
 
     ctx.fillStyle = "#111";
     ctx.fillRect(-26, -30, 6, 16); ctx.fillRect(20, -30, 6, 16);
@@ -850,13 +799,10 @@ function drawVectorCar(x, y, color, isPlayer = true) {
     ctx.fillRect(-10, -10, 20, 10);
 
     if (isPlayer) {
-        ctx.fillStyle = "#fff";
-        ctx.fillRect(-16, -38, 8, 4); ctx.fillRect(8, -38, 8, 4);
-        ctx.fillStyle = "#ff0055";
-        ctx.fillRect(-14, 38, 8, 4); ctx.fillRect(6, 38, 8, 4);
+        ctx.fillStyle = "#fff"; ctx.fillRect(-16, -38, 8, 4); ctx.fillRect(8, -38, 8, 4);
+        ctx.fillStyle = "#ff0055"; ctx.fillRect(-14, 38, 8, 4); ctx.fillRect(6, 38, 8, 4);
     } else {
-        ctx.fillStyle = "#ff0055";
-        ctx.fillRect(-16, -38, 8, 4); ctx.fillRect(8, -38, 8, 4);
+        ctx.fillStyle = "#ff0055"; ctx.fillRect(-16, -38, 8, 4); ctx.fillRect(8, -38, 8, 4);
     }
     ctx.restore();
 }
@@ -879,32 +825,27 @@ function drawCoin(x, y) {
 
 function drawBoss() {
     if (!bossActive) return;
-    ctx.save();
-    ctx.translate(canvas.width / 2, bossY);
+    ctx.save(); ctx.translate(225, bossY);
     ctx.fillStyle = "#ff0055";
-    ctx.beginPath();
-    ctx.moveTo(-60, -20); ctx.lineTo(60, -20); ctx.lineTo(80, 20); ctx.lineTo(-80, 20);
+    ctx.beginPath(); ctx.moveTo(-60, -20); ctx.lineTo(60, -20); ctx.lineTo(80, 20); ctx.lineTo(-80, 20);
     ctx.closePath(); ctx.fill();
-    ctx.fillStyle = "#ffe600";
-    ctx.fillRect(-30, 20, 60, 6);
+    ctx.fillStyle = "#ffe600"; ctx.fillRect(-30, 20, 60, 6);
     ctx.restore();
 }
 
 function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "#050714";
+    ctx.fillRect(0, 0, 450, 680);
 
-    // DESSIN PLUIE
-    ctx.strokeStyle = "rgba(0, 243, 255, 0.2)";
-    ctx.lineWidth = 1;
+    ctx.strokeStyle = "rgba(0, 243, 255, 0.2)"; ctx.lineWidth = 1;
     ctx.beginPath();
     rainDrops.forEach(r => { ctx.moveTo(r.x, r.y); ctx.lineTo(r.x, r.y + 8); });
     ctx.stroke();
 
-    ctx.strokeStyle = currentCityColor; ctx.lineWidth = 2;
-    ctx.globalAlpha = 0.3;
+    ctx.strokeStyle = currentCityColor; ctx.lineWidth = 2; ctx.globalAlpha = 0.3;
     ctx.setLineDash([20, 20]); ctx.lineDashOffset = -score * 2;
-    ctx.beginPath(); ctx.moveTo(167, 0); ctx.lineTo(167, canvas.height); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(292, 0); ctx.lineTo(292, canvas.height); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(167, 0); ctx.lineTo(167, 680); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(292, 0); ctx.lineTo(292, 680); ctx.stroke();
     ctx.setLineDash([]); ctx.globalAlpha = 1.0;
 
     drawBoss();
@@ -922,36 +863,28 @@ function draw() {
     });
 
     particles.forEach(p => {
-        ctx.fillStyle = p.color;
-        ctx.globalAlpha = p.life / p.maxLife;
+        ctx.fillStyle = p.color; ctx.globalAlpha = p.life / p.maxLife;
         ctx.fillRect(p.x, p.y, 4, 4);
     });
     ctx.globalAlpha = 1.0;
 
     drawVectorCar(playerX, playerY, CARS[equippedCar].color, true);
 
-    // TEXTES FLOTTANTS
     floatingTexts.forEach(ft => {
-        ctx.save();
-        ctx.globalAlpha = ft.alpha;
-        ctx.fillStyle = ft.color;
-        ctx.font = "bold 13px monospace";
-        ctx.textAlign = "center";
-        ctx.fillText(ft.text, ft.x, ft.y);
-        ctx.restore();
+        ctx.save(); ctx.globalAlpha = ft.alpha; ctx.fillStyle = ft.color;
+        ctx.font = "bold 13px monospace"; ctx.textAlign = "center";
+        ctx.fillText(ft.text, ft.x, ft.y); ctx.restore();
     });
 }
 
 function gameOver() {
     gameRunning = false; stopMusic(); playSFX(100, 30, "sawtooth", 0.4);
-    vibrate(300);
-    speakVoice("System Crash");
+    vibrate(300); speakVoice("System Crash");
     sessionDuration = Math.floor((Date.now() - gameStartTime) / 1000);
     let finalScoreNum = Math.floor(score / 10);
     bankCoins += sessionCoins;
     
-    saveScoreToBoard(finalScoreNum);
-    checkQuests(); saveProgress();
+    saveScoreToBoard(finalScoreNum); checkQuests(); saveProgress();
 
     document.getElementById("finalScore").innerText = finalScoreNum;
     document.getElementById("finalLevel").innerText = currentLevel;
@@ -961,7 +894,18 @@ function gameOver() {
     document.getElementById("gameOverScreen").classList.remove("hidden");
 }
 
-function loop() { if (gameRunning && !isPaused) { update(); draw(); requestAnimationFrame(loop); } }
+let lastTime = performance.now();
+function loop(currentTime) {
+    if (gameRunning && !isPaused) {
+        let deltaTime = (currentTime - lastTime) / 1000;
+        if (deltaTime > 0.1) deltaTime = 0.1;
+        lastTime = currentTime;
+
+        update(deltaTime);
+        draw();
+        requestAnimationFrame(loop);
+    }
+}
 
 openMenu();
 
