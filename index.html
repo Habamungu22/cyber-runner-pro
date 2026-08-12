@@ -45,7 +45,6 @@
 
         canvas { display: block; background: #050714; width: 100%; height: 100%; }
 
-        /* SCROLLBAR CYBERPUNK */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: rgba(5, 10, 20, 0.8); border-radius: 4px; }
         ::-webkit-scrollbar-thumb { background: var(--neon-blue); border-radius: 4px; }
@@ -109,8 +108,8 @@
         }
 
         h1 {
-            font-size: 26px; color: #fff; margin: 0; text-transform: uppercase;
-            text-shadow: 0 0 8px var(--neon-blue); letter-spacing: 1.5px;
+            font-size: 24px; color: #fff; margin: 0; text-transform: uppercase;
+            text-shadow: 0 0 8px var(--neon-blue); letter-spacing: 1.5px; text-align: center;
         }
 
         .brand {
@@ -118,11 +117,11 @@
             font-weight: bold; margin-top: 4px; margin-bottom: 12px; letter-spacing: 1px;
         }
 
-        .tabs { display: flex; gap: 10px; margin-bottom: 12px; width: 100%; }
+        .tabs { display: flex; gap: 6px; margin-bottom: 12px; width: 100%; }
 
         .tab-btn {
             flex: 1; background: rgba(10, 15, 28, 0.6); border: 1px solid rgba(0, 243, 255, 0.2);
-            color: #8a99ad; padding: 10px; font-family: monospace; font-size: 12px; font-weight: bold;
+            color: #8a99ad; padding: 8px 4px; font-family: monospace; font-size: 10px; font-weight: bold;
             cursor: pointer; border-radius: 6px; text-align: center;
         }
 
@@ -132,13 +131,13 @@
         }
 
         .content-container {
-            width: 100%; display: flex; flex-direction: column; gap: 10px;
-            margin-bottom: 15px; max-height: 250px; overflow-y: auto; padding-right: 4px;
+            width: 100%; display: flex; flex-direction: column; gap: 8px;
+            margin-bottom: 12px; max-height: 240px; overflow-y: auto; padding-right: 4px;
         }
 
-        .shop-item, .quest-card {
+        .shop-item, .quest-card, .upgrade-card, .leader-item {
             background: linear-gradient(135deg, rgba(15, 22, 41, 0.9) 0%, rgba(8, 12, 24, 0.9) 100%);
-            border: 1px solid rgba(0, 243, 255, 0.2); border-radius: 8px; padding: 12px;
+            border: 1px solid rgba(0, 243, 255, 0.2); border-radius: 8px; padding: 10px;
             display: flex; align-items: center; justify-content: space-between; gap: 10px;
         }
 
@@ -147,25 +146,25 @@
             background: linear-gradient(135deg, rgba(0, 243, 255, 0.15) 0%, rgba(8, 12, 24, 0.9) 100%);
         }
 
-        .car-preview { width: 26px; height: 40px; border-radius: 5px; border: 2px solid; flex-shrink: 0; }
+        .car-preview { width: 24px; height: 38px; border-radius: 5px; border: 2px solid; flex-shrink: 0; }
 
         .btn-small {
             background: rgba(5, 10, 20, 0.8); border: 1px solid var(--neon-green);
-            color: var(--neon-green); padding: 7px 12px; border-radius: 5px;
-            cursor: pointer; font-family: monospace; font-size: 11px; font-weight: bold;
+            color: var(--neon-green); padding: 6px 10px; border-radius: 5px;
+            cursor: pointer; font-family: monospace; font-size: 10px; font-weight: bold;
         }
 
         .btn-small:disabled { border-color: #334155; color: #64748b; background: transparent; }
 
         .btn {
             background: rgba(255,0,85,0.2); border: 2px solid var(--neon-pink); color: #fff;
-            padding: 14px 30px; font-size: 15px; font-family: monospace; font-weight: bold;
+            padding: 12px 24px; font-size: 14px; font-family: monospace; font-weight: bold;
             cursor: pointer; border-radius: 8px; width: 100%; letter-spacing: 1px; text-transform: uppercase;
         }
 
         .btn-install {
             background: rgba(0,255,106,0.2); border: 1px solid var(--neon-green); color: var(--neon-green);
-            padding: 10px 20px; font-size: 12px; font-family: monospace; font-weight: bold;
+            padding: 8px 16px; font-size: 11px; font-family: monospace; font-weight: bold;
             cursor: pointer; border-radius: 6px; width: 100%; margin-bottom: 10px; display: none; text-align: center;
         }
 
@@ -183,8 +182,8 @@
         <div class="hud-card" style="color: var(--neon-pink);">LVL <span id="level">1</span></div>
         <div class="hud-card">PIÈCES: <span id="coins" style="color: var(--neon-green);">0</span></div>
         <div class="hud-controls">
-            <button class="icon-btn" id="pauseBtn" onclick="togglePause()">⏸️ PAUSE</button>
-            <button class="icon-btn" id="musicToggleBtn" onclick="toggleMusic()">🔊 AUDIO</button>
+            <button class="icon-btn" id="pauseBtn" onclick="togglePause()">⏸️</button>
+            <button class="icon-btn" id="musicToggleBtn" onclick="toggleMusic()">🔊</button>
         </div>
     </div>
 
@@ -210,17 +209,22 @@
 
         <button id="installBtn" class="btn-install" onclick="installApp()">📲 TÉLÉCHARGER L'APPLICATION</button>
 
-        <div style="font-family: monospace; color: var(--neon-green); font-size: 13px; margin-bottom: 12px;">
+        <div style="font-family: monospace; color: var(--neon-green); font-size: 12px; margin-bottom: 10px;">
             💰 SOLDE : <span id="totalCoins">0</span> PIÈCES
         </div>
 
         <div class="tabs">
-            <button class="tab-btn active" id="tabGarage" onclick="switchTab('garage')">🚗 GARAGE</button>
-            <button class="tab-btn" id="tabQuests" onclick="switchTab('quests')">🎯 MISSIONS</button>
+            <button class="tab-btn active" id="tabGarage" onclick="switchTab('garage')">GARAGE</button>
+
+            <button class="tab-btn" id="tabUpgrades" onclick="switchTab('upgrades')">BOOSTS</button>
+            <button class="tab-btn" id="tabQuests" onclick="switchTab('quests')">MISSIONS</button>
+            <button class="tab-btn" id="tabScores" onclick="switchTab('scores')">TOP 5</button>
         </div>
 
         <div class="content-container" id="garageView"></div>
+        <div class="content-container hidden" id="upgradesView"></div>
         <div class="content-container hidden" id="questsView"></div>
+        <div class="content-container hidden" id="scoresView"></div>
 
         <button class="btn" onclick="startGame()">LANCER LA COURSE</button>
     </div>
@@ -239,12 +243,12 @@
     <div id="gameOverScreen" class="overlay hidden">
         <h1 style="color: var(--neon-pink);">CRASH DÉTECTÉ</h1>
         <div class="brand">Conçu par Haba technologie</div>
-        <p style="color: #a0aab8; text-align: center; line-height: 1.8; font-family: monospace; margin: 15px 0;">
+        <p style="color: #a0aab8; text-align: center; line-height: 1.6; font-family: monospace; margin: 10px 0; font-size: 12px;">
             Score Session : <b id="finalScore" style="color: #fff">0</b><br>
             Niveau Atteint : <b id="finalLevel" style="color: var(--neon-pink)">1</b><br>
             Pièces Gagnées : <b id="gainedCoins" style="color: var(--neon-green)">0</b><br>
             Temps de Survie : <b id="survivedTime" style="color: var(--neon-blue)">0</b>s<br>
-            Record : <b id="bestScore" style="color: var(--neon-yellow)">0</b>
+            Frôlements (Near Miss) : <b id="finalNearMisses" style="color: var(--neon-yellow)">0</b>
         </p>
         <button class="btn" onclick="openMenu()">MENUS / GARAGE</button>
     </div>
@@ -253,6 +257,13 @@
 <script>
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
+
+// VIBRATION HAPTIQUE (MOBILE)
+function vibrate(ms = 30) {
+    if ("vibrate" in navigator) {
+        try { navigator.vibrate(ms); } catch (e) {}
+    }
+}
 
 const CARS = [
     { id: 0, name: "Cyber Runner", price: 0, ability: "Aucune", color: "#00f3ff" },
@@ -277,6 +288,14 @@ const LEVEL_THEMES = [
 let bankCoins = parseInt(localStorage.getItem("cyber_bank_coins")) || 0;
 let unlockedCars = JSON.parse(localStorage.getItem("cyber_unlocked_cars")) || [0];
 let equippedCar = parseInt(localStorage.getItem("cyber_equipped_car")) || 0;
+let leaderBoard = JSON.parse(localStorage.getItem("cyber_leaderboard")) || [];
+
+let upgrades = JSON.parse(localStorage.getItem("cyber_upgrades")) || {
+    magnet: 1,
+    turbo: 1,
+    double: 1
+};
+
 let questState = JSON.parse(localStorage.getItem("cyber_quests_state")) || {
     c30: { done: false, claimed: false },
     t45: { done: false, claimed: false },
@@ -304,7 +323,6 @@ function installApp() {
     }
 }
 
-// SYNTHÈSE VOCALE - DÉSACTIVÉE SUR MOBILE POUR ÉVITER LES LAGS
 function speakVoice(text) {
     if (musicMuted || isMobile || !('speechSynthesis' in window)) return;
     window.speechSynthesis.cancel();
@@ -328,7 +346,7 @@ function initAudio() {
 
 function toggleMusic() {
     musicMuted = !musicMuted;
-    document.getElementById("musicToggleBtn").innerText = musicMuted ? "🔇 AUDIO" : "🔊 AUDIO";
+    document.getElementById("musicToggleBtn").innerText = musicMuted ? "🔇" : "🔊";
     if (musicMuted) {
         stopMusic();
         if ('speechSynthesis' in window) window.speechSynthesis.cancel();
@@ -370,15 +388,29 @@ let currentLane = 1;
 let playerX = lanes[1], playerY = 540;
 
 let isJumping = false, jumpHeight = 0, jumpTimer = 0;
-let gameRunning = false, score = 0, multiplier = 1, highScore = localStorage.getItem("cyber_runner_hs") || 0;
+let gameRunning = false, score = 0, multiplier = 1;
 let sessionCoins = 0, speed = 4.0, gameStartTime = 0, sessionDuration = 0, shieldCollectedInSession = false;
 
 let currentLevel = 1;
 let obstacleSpawnRate = 0.025;
 let currentCityColor = "#00f3ff";
 
+let nearMissCount = 0;
+let floatingTexts = [];
+
+// BOSS & RAIN
+let bossActive = false;
+let bossY = -150;
+let bossHp = 100;
+let bossTimer = 0;
+let rainDrops = [];
+
 let hasShield = false, magnetTimer = 0, turboTimer = 0, doubleCoinsTimer = 0;
 let obstacles = [], coins = [], powerups = [], particles = [];
+
+for(let i=0; i<30; i++) {
+    rainDrops.push({ x: Math.random()*450, y: Math.random()*680, speed: 8 + Math.random()*6 });
+}
 
 function togglePause() {
     if (!gameRunning) return;
@@ -393,10 +425,14 @@ function quitToMenu() {
 }
 
 function switchTab(tab) {
-    document.getElementById("tabGarage").classList.toggle("active", tab === 'garage');
-    document.getElementById("tabQuests").classList.toggle("active", tab === 'quests');
-    document.getElementById("garageView").classList.toggle("hidden", tab !== 'garage');
-    document.getElementById("questsView").classList.toggle("hidden", tab !== 'quests');
+    ['garage', 'upgrades', 'quests', 'scores'].forEach(t => {
+        document.getElementById(`tab${t.charAt(0).toUpperCase() + t.slice(1)}`).classList.toggle("active", tab === t);
+        document.getElementById(`${t}View`).classList.toggle("hidden", tab !== t);
+    });
+}
+
+function addFloatingText(text, x, y, color="#ffe600") {
+    floatingTexts.push({ text, x, y, alpha: 1.0, color });
 }
 
 function renderGarage() {
@@ -413,10 +449,36 @@ function renderGarage() {
             <div class="shop-item ${isEquipped ? 'active' : ''}">
                 <div class="car-preview" style="background: ${car.color}; border-color: ${car.color};"></div>
                 <div style="flex-grow: 1;">
-                    <div style="font-weight: bold; font-size: 13px; color: ${car.color}">${car.name}</div>
-                    <div style="font-size: 11px; color: #a0aab8;">${car.ability}</div>
+                    <div style="font-weight: bold; font-size: 12px; color: ${car.color}">${car.name}</div>
+                    <div style="font-size: 10px; color: #a0aab8;">${car.ability}</div>
                 </div>
                 ${btnHTML}
+            </div>`;
+    });
+}
+
+function renderUpgrades() {
+    const view = document.getElementById("upgradesView");
+    view.innerHTML = "";
+    const list = [
+        { key: 'magnet', name: '🧲 AIMANT', desc: 'Durée augmentée' },
+        { key: 'turbo', name: '⚡ TURBO', desc: 'Durée augmentée' },
+        { key: 'double', name: '2️⃣ PIÈCES x2', desc: 'Durée augmentée' }
+    ];
+
+    list.forEach(u => {
+        let lvl = upgrades[u.key];
+        let price = lvl * 60;
+        let btn = lvl >= 5 ? `<button class="btn-small" disabled>MAX</button>` :
+            `<button class="btn-small" onclick="buyUpgrade('${u.key}', ${price})">NIV ${lvl+1} (${price} 💰)</button>`;
+
+        view.innerHTML += `
+            <div class="upgrade-card">
+                <div>
+                    <div style="font-size: 11px; font-weight: bold;">${u.name} (NIV ${lvl}/5)</div>
+                    <div style="font-size: 10px; color: #a0aab8;">${u.desc}</div>
+                </div>
+                ${btn}
             </div>`;
     });
 }
@@ -433,11 +495,28 @@ function renderQuests() {
         view.innerHTML += `
             <div class="quest-card">
                 <div>
-                    <div style="font-size: 12px; font-weight: bold;">${q.title}</div>
-                    <div style="font-size: 11px; color: #a0aab8;">${q.desc}</div>
-                    <div style="color: var(--neon-yellow); font-family: monospace; font-size: 11px;">+${q.reward} PIÈCES</div>
+                    <div style="font-size: 11px; font-weight: bold;">${q.title}</div>
+                    <div style="font-size: 10px; color: #a0aab8;">${q.desc}</div>
+                    <div style="color: var(--neon-yellow); font-family: monospace; font-size: 10px;">+${q.reward} PIÈCES</div>
                 </div>
                 ${btnHTML}
+            </div>`;
+    });
+}
+
+function renderScores() {
+    const view = document.getElementById("scoresView");
+    view.innerHTML = "";
+    if (leaderBoard.length === 0) {
+        view.innerHTML = `<div style="text-align:center; color:#8a99ad; font-size:11px; padding:10px;">AUCUN SCORE REGISTRÉ</div>`;
+        return;
+    }
+    leaderBoard.forEach((item, index) => {
+        view.innerHTML += `
+            <div class="leader-item">
+                <span style="color:var(--neon-yellow); font-weight:bold; font-size:12px;">#${index+1}</span>
+                <span style="font-size:11px; font-family:monospace; color:#fff;">SCORE: ${item.score}</span>
+                <span style="font-size:10px; color:var(--neon-pink);">${item.date}</span>
             </div>`;
     });
 }
@@ -449,6 +528,14 @@ function claimQuest(id) {
     if (q && questState[id].done && !questState[id].claimed) {
         bankCoins += q.reward; questState[id].claimed = true;
         saveProgress(); updateCoinsDisplay(); renderQuests(); playSFX(600, 1000, "triangle", 0.3);
+    }
+}
+
+function buyUpgrade(key, price) {
+    if (bankCoins >= price && upgrades[key] < 5) {
+        bankCoins -= price;
+        upgrades[key]++;
+        saveProgress(); updateCoinsDisplay(); renderUpgrades(); playSFX(500, 900, "triangle", 0.3);
     }
 }
 
@@ -467,10 +554,20 @@ function saveProgress() {
     localStorage.setItem("cyber_unlocked_cars", JSON.stringify(unlockedCars));
     localStorage.setItem("cyber_equipped_car", equippedCar);
     localStorage.setItem("cyber_quests_state", JSON.stringify(questState));
+    localStorage.setItem("cyber_upgrades", JSON.stringify(upgrades));
+    localStorage.setItem("cyber_leaderboard", JSON.stringify(leaderBoard));
+}
+
+function saveScoreToBoard(newScore) {
+    const dateStr = new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' });
+    leaderBoard.push({ score: newScore, date: dateStr });
+    leaderBoard.sort((a, b) => b.score - a.score);
+    leaderBoard = leaderBoard.slice(0, 5);
+    localStorage.setItem("cyber_leaderboard", JSON.stringify(leaderBoard));
 }
 
 function openMenu() {
-    updateCoinsDisplay(); renderGarage(); renderQuests();
+    updateCoinsDisplay(); renderGarage(); renderUpgrades(); renderQuests(); renderScores();
     document.getElementById("startScreen").classList.remove("hidden");
     document.getElementById("gameOverScreen").classList.add("hidden");
     document.getElementById("pauseScreen").classList.add("hidden");
@@ -479,7 +576,7 @@ function openMenu() {
 function triggerJump() { if (!isJumping && gameRunning && !isPaused) { isJumping = true; jumpTimer = 0; playSFX(200, 500, "square", 0.15); } }
 
 function addParticles(x, y, color, count = 5) {
-    if (isMobile) count = 3; // Réduit le nombre de particules sur mobile
+    if (isMobile) count = 3;
     for (let i = 0; i < count; i++) {
         particles.push({
             x: x, y: y,
@@ -531,6 +628,12 @@ function updateDifficultyAndCity() {
         document.documentElement.style.setProperty('--city-color', currentCityColor);
         speakVoice(`Level ${currentLevel}`);
         addParticles(canvas.width / 2, canvas.height / 2, currentCityColor, 15);
+        
+        bossActive = true;
+        bossY = -150;
+        bossHp = 100;
+        bossTimer = 300;
+        addFloatingText("WARNING: BOSS!", canvas.width / 2, 200, "#ff0055");
     }
 
     obstacleSpawnRate = 0.022 + (currentLevel * 0.006);
@@ -545,10 +648,12 @@ function startGame() {
 
     currentLane = 1; playerX = lanes[1]; playerY = 540;
     score = 0; multiplier = 1; sessionCoins = 0; speed = 4.0;
-    currentLevel = 1; obstacleSpawnRate = 0.025;
+    currentLevel = 1; obstacleSpawnRate = 0.025; nearMissCount = 0;
     currentCityColor = LEVEL_THEMES[0].color;
     document.documentElement.style.setProperty('--city-color', currentCityColor);
 
+    bossActive = false;
+    floatingTexts = [];
     isJumping = false; jumpHeight = 0; magnetTimer = 0; turboTimer = 0; doubleCoinsTimer = 0;
     gameStartTime = Date.now(); shieldCollectedInSession = false; isPaused = false;
 
@@ -602,7 +707,37 @@ function update() {
         if (jumpTimer >= Math.PI) { isJumping = false; jumpHeight = 0; }
     }
 
-    if (Math.random() < obstacleSpawnRate) obstacles.push({ lane: Math.floor(Math.random() * 3), y: -80, type: Math.random() < 0.25 ? 'laser' : 'car' });
+    // BOSS LOGIQUE
+    if (bossActive) {
+        if (bossY < 80) bossY += 2;
+        bossTimer--;
+        if (bossTimer % 50 === 0) {
+            let targetLane = Math.floor(Math.random() * 3);
+            obstacles.push({ lane: targetLane, y: bossY + 40, type: 'laser' });
+        }
+        if (bossTimer <= 0) {
+            bossActive = false;
+            addFloatingText("BOSS DEFEATED!", canvas.width / 2, 200, "#00ff66");
+            sessionCoins += 20;
+        }
+    }
+
+    // MÉTÉO PLUIE
+    rainDrops.forEach(r => {
+        r.y += r.speed + currentSpeed;
+        if (r.y > 680) { r.y = -10; r.x = Math.random() * 450; }
+    });
+
+    if (Math.random() < obstacleSpawnRate) {
+        let isSmart = Math.random() < 0.3;
+        obstacles.push({ 
+            lane: Math.floor(Math.random() * 3), 
+            y: -80, 
+            type: Math.random() < 0.25 ? 'laser' : 'car',
+            isSmart: isSmart,
+            moved: false
+        });
+    }
     if (Math.random() < 0.025) coins.push({ lane: Math.floor(Math.random() * 3), y: -60 });
     if (Math.random() < 0.006) {
         let types = ['shield', 'magnet', 'turbo', 'double'];
@@ -615,9 +750,37 @@ function update() {
         if (p.life <= 0) particles.splice(i, 1);
     }
 
+    for (let i = floatingTexts.length - 1; i >= 0; i--) {
+        let ft = floatingTexts[i];
+        ft.y -= 1; ft.alpha -= 0.02;
+        if (ft.alpha <= 0) floatingTexts.splice(i, 1);
+    }
+
     for (let i = obstacles.length - 1; i >= 0; i--) {
         let obs = obstacles[i]; obs.y += currentSpeed;
-        if (Math.abs(playerX - lanes[obs.lane]) < 35 && Math.abs(playerY - obs.y) < 50) {
+
+        if (obs.isSmart && !obs.moved && obs.y > 200 && obs.y < 350) {
+            if (obs.lane === currentLane) {
+                let options = [0, 1, 2].filter(l => l !== obs.lane);
+                obs.lane = options[Math.floor(Math.random() * options.length)];
+                obs.moved = true;
+            }
+        }
+
+        let distY = Math.abs(playerY - obs.y);
+        let distX = Math.abs(playerX - lanes[obs.lane]);
+
+        // NEAR MISS DETECTION
+        if (distY < 40 && distX > 30 && distX < 65 && !obs.nearMissed) {
+            obs.nearMissed = true;
+            nearMissCount++;
+            addFloatingText("NEAR MISS! +50", playerX, playerY - 40, "#ffe600");
+            score += 500;
+            vibrate(15);
+            playSFX(800, 1200, "sine", 0.1);
+        }
+
+        if (distX < 35 && distY < 50) {
             if (turboTimer > 0) {
                 addParticles(lanes[obs.lane], obs.y, "#ff0055", 8);
                 obstacles.splice(i, 1);
@@ -628,6 +791,7 @@ function update() {
                     hasShield = false; multiplier = 1;
                     addParticles(lanes[obs.lane], obs.y, "#00f3ff", 8);
                     obstacles.splice(i, 1); playSFX(300, 150, "sawtooth", 0.2);
+                    vibrate(100);
                     speakVoice("Shield Down");
                 } else { gameOver(); }
             }
@@ -637,11 +801,13 @@ function update() {
     for (let i = powerups.length - 1; i >= 0; i--) {
         let p = powerups[i]; p.y += currentSpeed;
         if (Math.abs(playerX - lanes[p.lane]) < 35 && Math.abs(playerY - p.y) < 35) {
+            let durBonus = (upgrades[p.type] || 1) * 60;
             if (p.type === 'shield') { hasShield = true; shieldCollectedInSession = true; speakVoice("Shield Activated"); }
-            if (p.type === 'magnet') { magnetTimer = 360; speakVoice("Magnet Activated"); }
-            if (p.type === 'turbo') { turboTimer = 180; speakVoice("Turbo Activated"); }
-            if (p.type === 'double') { doubleCoinsTimer = 360; speakVoice("Double Coins"); }
+            if (p.type === 'magnet') { magnetTimer = 360 + durBonus; speakVoice("Magnet Activated"); }
+            if (p.type === 'turbo') { turboTimer = 180 + durBonus; speakVoice("Turbo Activated"); }
+            if (p.type === 'double') { doubleCoinsTimer = 360 + durBonus; speakVoice("Double Coins"); }
             addParticles(lanes[p.lane], p.y, "#ffe600", 6);
+            vibrate(40);
             playSFX(400, 800, "triangle", 0.25); powerups.splice(i, 1);
         } else if (p.y > canvas.height + 40) powerups.splice(i, 1);
     }
@@ -657,12 +823,12 @@ function update() {
             sessionCoins += (doubleCoinsTimer > 0 ? 2 : 1);
             if (sessionCoins % 10 === 0 && multiplier < 5) multiplier++;
             addParticles(lanes[c.lane], c.y, "#ffe600", 4);
+            vibrate(20);
             playSFX(900, 1200, "sine", 0.15); coins.splice(i, 1);
         } else if (c.y > canvas.height + 40) coins.splice(i, 1);
     }
 }
 
-// DESSIN OPTIMISÉ POUR MOBILE (SANS SHADOWBLUR TROP LOURD)
 function drawVectorCar(x, y, color, isPlayer = true) {
     ctx.save();
     ctx.translate(x, y - (isPlayer ? jumpHeight : 0));
@@ -711,8 +877,28 @@ function drawCoin(x, y) {
     ctx.fillText("💰", 0, 0); ctx.restore();
 }
 
+function drawBoss() {
+    if (!bossActive) return;
+    ctx.save();
+    ctx.translate(canvas.width / 2, bossY);
+    ctx.fillStyle = "#ff0055";
+    ctx.beginPath();
+    ctx.moveTo(-60, -20); ctx.lineTo(60, -20); ctx.lineTo(80, 20); ctx.lineTo(-80, 20);
+    ctx.closePath(); ctx.fill();
+    ctx.fillStyle = "#ffe600";
+    ctx.fillRect(-30, 20, 60, 6);
+    ctx.restore();
+}
+
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // DESSIN PLUIE
+    ctx.strokeStyle = "rgba(0, 243, 255, 0.2)";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    rainDrops.forEach(r => { ctx.moveTo(r.x, r.y); ctx.lineTo(r.x, r.y + 8); });
+    ctx.stroke();
 
     ctx.strokeStyle = currentCityColor; ctx.lineWidth = 2;
     ctx.globalAlpha = 0.3;
@@ -720,6 +906,8 @@ function draw() {
     ctx.beginPath(); ctx.moveTo(167, 0); ctx.lineTo(167, canvas.height); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(292, 0); ctx.lineTo(292, canvas.height); ctx.stroke();
     ctx.setLineDash([]); ctx.globalAlpha = 1.0;
+
+    drawBoss();
 
     coins.forEach(c => drawCoin(lanes[c.lane], c.y));
     powerups.forEach(p => {
@@ -741,23 +929,35 @@ function draw() {
     ctx.globalAlpha = 1.0;
 
     drawVectorCar(playerX, playerY, CARS[equippedCar].color, true);
+
+    // TEXTES FLOTTANTS
+    floatingTexts.forEach(ft => {
+        ctx.save();
+        ctx.globalAlpha = ft.alpha;
+        ctx.fillStyle = ft.color;
+        ctx.font = "bold 13px monospace";
+        ctx.textAlign = "center";
+        ctx.fillText(ft.text, ft.x, ft.y);
+        ctx.restore();
+    });
 }
 
 function gameOver() {
     gameRunning = false; stopMusic(); playSFX(100, 30, "sawtooth", 0.4);
+    vibrate(300);
     speakVoice("System Crash");
     sessionDuration = Math.floor((Date.now() - gameStartTime) / 1000);
     let finalScoreNum = Math.floor(score / 10);
     bankCoins += sessionCoins;
+    
+    saveScoreToBoard(finalScoreNum);
     checkQuests(); saveProgress();
-
-    if (finalScoreNum > highScore) { highScore = finalScoreNum; localStorage.setItem("cyber_runner_hs", highScore); }
 
     document.getElementById("finalScore").innerText = finalScoreNum;
     document.getElementById("finalLevel").innerText = currentLevel;
     document.getElementById("gainedCoins").innerText = sessionCoins;
     document.getElementById("survivedTime").innerText = sessionDuration;
-    document.getElementById("bestScore").innerText = highScore;
+    document.getElementById("finalNearMisses").innerText = nearMissCount;
     document.getElementById("gameOverScreen").classList.remove("hidden");
 }
 
@@ -765,7 +965,6 @@ function loop() { if (gameRunning && !isPaused) { update(); draw(); requestAnima
 
 openMenu();
 
-// ENREGISTREMENT DU SERVICE WORKER (PWA)
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js').catch(() => {});
