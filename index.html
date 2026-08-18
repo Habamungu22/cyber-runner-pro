@@ -558,8 +558,14 @@ function addParticles(x, y, color, count = 3) {
     }
 }
 
-function moveLeft() { if (gameRunning && !isPaused && currentLane > 0) currentLane--; }
-function moveRight() { if (gameRunning && !isPaused && currentLane < 2) currentLane++; }
+function moveLeft() {
+    let speedMult = (equippedCar === 1) ? 1.5 : 1.0;
+    if (gameRunning && !isPaused && currentLane > 0) currentLane--;
+}
+function moveRight() {
+    let speedMult = (equippedCar === 1) ? 1.5 : 1.0;
+    if (gameRunning && !isPaused && currentLane < 2) currentLane++;
+}
 
 window.addEventListener("keydown", e => {
     if (e.code === "KeyP" || e.code === "Escape") { togglePause(); return; }
@@ -680,7 +686,8 @@ function update(dt) {
     document.getElementById("score").innerText = Math.floor(score / 10);
     document.getElementById("coins").innerText = sessionCoins;
 
-    playerX += (lanes[currentLane] - playerX) * 0.25 * speedMultiplier;
+    let moveSpeed = (equippedCar === 1) ? 0.35 : 0.25;
+    playerX += (lanes[currentLane] - playerX) * moveSpeed * speedMultiplier;
 
     if (isJumping) {
         jumpTimer += 0.08 * speedMultiplier;
@@ -736,7 +743,6 @@ function update(dt) {
     for (let i = coins.length - 1; i >= 0; i--) {
         let c = coins[i]; c.y += currentSpeed;
         
-        // Aimant
         if (magnetTimer > 0 || equippedCar === 2) {
             let cx = lanes[c.lane];
             if (Math.abs(playerY - c.y) < 180) {
@@ -749,151 +755,194 @@ function update(dt) {
         let distY = Math.abs(playerY - c.y);
         if (distX < 30 && distY < 35) {
             sessionCoins += (doubleCoinsTimer > 0 ? 2 : 1);
-            playSFX(800, 1200, "sine", 0.08);
+            addParticles(lanes[c.lane], c.y, "#ffe600", 4);
+            playSFX(800, 1200, "sine", 0.1);
             coins.splice(i, 1);
-        } else if (c.y > 700) coins.splice(i, 1);
+            continue;
+        }
+        if (c.y > 700) coins.splice(i, 1);
     }
 
-    // Power-ups
+    // Powerups
     for (let i = powerups.length - 1; i >= 0; i--) {
         let p = powerups[i]; p.y += currentSpeed;
         let distX = Math.abs(playerX - lanes[p.lane]);
         let distY = Math.abs(playerY - p.y);
         if (distX < 30 && distY < 35) {
-            playSFX(400, 900, "triangle", 0.2);
-            if (p.type === 'shield') hasShield = true;
-            if (p.type === 'magnet') magnetTimer = 300 + (upgrades.magnet * 60);
-            if (p.type === 'turbo') turboTimer = 200 + (upgrades.turbo * 50);
-            if (p.type === 'double') doubleCoinsTimer = 350 + (upgrades.double * 60);
-            addFloatingText(p.type.toUpperCase() + "!", playerX, playerY - 30, "#00f3ff");
+            let durationBase = 300;
+            if (p.type === 'shield') { hasShield = true; speakVoice("Shield Active"); }
+            if (p.type === 'magnet') { magnetTimer = durationBase + (upgrades.magnet * 60); speakVoice("Magnet Active"); }
+            if (p.type === 'turbo') { turboTimer = durationBase + (upgrades.turbo * 60); speakVoice("Turbo Boost"); }
+            if (p.type === 'double') { doubleCoinsTimer = durationBase + (upgrades.double * 60); speakVoice("Double Coins"); }
+            
+            addFloatingText(p.type.toUpperCase() + "!", playerX, playerY - 40, "#00f3ff");
+            addParticles(lanes[p.lane], p.y, "#00f3ff", 6);
+            playSFX(400, 1000, "triangle", 0.25);
             powerups.splice(i, 1);
-        } else if (p.y > 700) powerups.splice(i, 1);
+            continue;
+        }
+        if (p.y > 700) powerups.splice(i, 1);
     }
 
-    // Obstacles
+    // Obstacles & Collisions
     for (let i = obstacles.length - 1; i >= 0; i--) {
-        let obs = obstacles[i]; obs.y += currentSpeed;
+        let obs = obstacles[i];
+        obs.y += obs.type === 'laser' ? currentSpeed * 1.5 : currentSpeed;
 
-        if (obs.isSmart && !obs.moved && obs.y > 200 && obs.y < 350) {
-            if (obs.lane === currentLane) {
-                let options = [0, 1, 2].filter(l => l !== obs.lane);
-                obs.lane = options[Math.floor(Math.random() * options.length)];
-                obs.moved = true;
-            }
+        if (obs.isSmart && !obs.moved && obs.y > 200 && obs.lane === currentLane) {
+            obs.moved = true;
+            if (obs.lane === 0) obs.lane = 1;
+            else if (obs.lane === 2) obs.lane = 1;
+            else obs.lane = Math.random() < 0.5 ? 0 : 2;
         }
 
-        let distY = Math.abs(playerY - obs.y);
         let distX = Math.abs(playerX - lanes[obs.lane]);
+        let distY = Math.abs(playerY - obs.y);
 
-        if (distY < 40 && distX > 30 && distX < 65 && !obs.nearMissed) {
-            obs.nearMissed = true; nearMissCount++;
-            addFloatingText("NEAR MISS! +50", playerX, playerY - 40, "#ffe600");
-            score += 500; vibrate(15); playSFX(800, 1200, "sine", 0.1);
+        // Near Miss (Frôlement)
+        if (distX > 25 && distX < 55 && Math.abs(playerY - obs.y) < 20) {
+            nearMissCount++;
+            multiplier++;
+            addFloatingText("NEAR MISS! x" + multiplier, playerX, playerY - 30, "#ffe600");
+            playSFX(900, 1100, "sine", 0.08);
         }
 
-        if (distX < 30 && distY < 40 && !isJumping) {
-            if (turboTimer > 0) {
-                addParticles(lanes[obs.lane], obs.y, "#ff0055", 4);
-                obstacles.splice(i, 1);
+        // Collision effective
+        if (distX < 28 && distY < 38) {
+            if (isJumping && jumpHeight > 25 && obs.type !== 'laser') {
+                // Sauté par-dessus
             } else if (hasShield) {
                 hasShield = false;
-                addParticles(lanes[obs.lane], obs.y, "#00f3ff", 6);
+                addParticles(playerX, playerY, "#00f3ff", 10);
+                playSFX(300, 100, "sawtooth", 0.3);
+                speakVoice("Shield Destroyed");
                 obstacles.splice(i, 1);
-                playSFX(300, 100, "sawtooth", 0.2);
             } else {
                 gameOver();
                 return;
             }
-        } else if (obs.y > 720) obstacles.splice(i, 1);
+        }
+
+        if (obs.y > 720) obstacles.splice(i, 1);
     }
 }
 
 function draw() {
     ctx.fillStyle = "#050714";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillRect(0, 0, 450, 680);
 
-    // Lignes de voie
-    ctx.strokeStyle = "rgba(0, 243, 255, 0.15)";
+    // Lignes de route & effet néon
+    ctx.strokeStyle = currentCityColor;
     ctx.lineWidth = 2;
-    [150, 300].forEach(x => {
+    ctx.globalAlpha = 0.3;
+    [157, 292].forEach(x => {
         ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, 680); ctx.stroke();
     });
 
-    // Pluie
-    ctx.strokeStyle = "rgba(0, 243, 255, 0.3)";
+    // Pluie synthwave
+    ctx.strokeStyle = "#00f3ff";
+    ctx.globalAlpha = 0.2;
     rainDrops.forEach(r => {
-        ctx.beginPath(); ctx.moveTo(r.x, r.y); ctx.lineTo(r.x, r.y + 10); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(r.x, r.y); ctx.lineTo(r.x - 1, r.y + 8); ctx.stroke();
     });
+    ctx.globalAlpha = 1.0;
+
+    // Boss Visual
+    if (bossActive) {
+        ctx.fillStyle = "#ff0055";
+        ctx.shadowColor = "#ff0055"; ctx.shadowBlur = 15;
+        ctx.beginPath();
+        ctx.arc(225, bossY, 40, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+    }
 
     // Pièces
     ctx.fillStyle = "#ffe600";
+    ctx.shadowColor = "#ffe600"; ctx.shadowBlur = 8;
     coins.forEach(c => {
-        ctx.beginPath(); ctx.arc(lanes[c.lane], c.y, 8, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath();
+        ctx.arc(lanes[c.lane], c.y, 8, 0, Math.PI * 2);
+        ctx.fill();
     });
+    ctx.shadowBlur = 0;
 
-    // Power-ups
+    // Powerups
     powerups.forEach(p => {
-        ctx.fillStyle = p.type === 'shield' ? '#00f3ff' : (p.type === 'magnet' ? '#ff0055' : '#ffe600');
+        ctx.fillStyle = p.type === 'shield' ? '#00f3ff' : (p.type === 'magnet' ? '#ff0055' : '#00ff66');
         ctx.fillRect(lanes[p.lane] - 10, p.y - 10, 20, 20);
     });
 
     // Obstacles
-    obstacles.forEach(o => {
-        ctx.fillStyle = o.type === 'laser' ? '#ff0055' : '#ffe600';
-        ctx.fillRect(lanes[o.lane] - 18, o.y - 25, 36, 50);
+    obstacles.forEach(obs => {
+        let x = lanes[obs.lane];
+        if (obs.type === 'laser') {
+            ctx.fillStyle = "#ff0055";
+            ctx.shadowColor = "#ff0055"; ctx.shadowBlur = 12;
+            ctx.fillRect(x - 22, obs.y - 6, 44, 12);
+        } else {
+            ctx.fillStyle = obs.isSmart ? "#ffe600" : "#ff0055";
+            ctx.shadowColor = ctx.fillStyle; ctx.shadowBlur = 10;
+            ctx.fillRect(x - 16, obs.y - 25, 32, 50);
+        }
+        ctx.shadowBlur = 0;
     });
-
-    // Boss
-    if (bossActive) {
-        ctx.fillStyle = "#ff0055";
-        ctx.fillRect(150, bossY, 150, 40);
-    }
-
-    // Joueur
-    let drawY = playerY - jumpHeight;
-    ctx.fillStyle = CARS[equippedCar].color;
-    ctx.fillRect(playerX - 16, drawY - 25, 32, 50);
-
-    if (hasShield) {
-        ctx.strokeStyle = "#00f3ff"; ctx.lineWidth = 3;
-        ctx.beginPath(); ctx.arc(playerX, drawY, 30, 0, Math.PI * 2); ctx.stroke();
-    }
 
     // Particules
     particles.forEach(p => {
         ctx.fillStyle = p.color;
+        ctx.globalAlpha = p.life / p.maxLife;
         ctx.fillRect(p.x, p.y, 3, 3);
     });
+    ctx.globalAlpha = 1.0;
 
-    // Textes Flottants
+    // Joueur
+    let carColor = CARS[equippedCar].color;
+    let py = playerY - jumpHeight;
+
+    ctx.fillStyle = carColor;
+    ctx.shadowColor = carColor; ctx.shadowBlur = hasShield ? 20 : 10;
+    ctx.fillRect(playerX - 16, py - 25, 32, 50);
+    ctx.shadowBlur = 0;
+
+    // Phares du joueur
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(playerX - 12, py - 27, 6, 4);
+    ctx.fillRect(playerX + 6, py - 27, 6, 4);
+
+    // Bouclier visuel autour du joueur
+    if (hasShield) {
+        ctx.strokeStyle = "#00f3ff";
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(playerX, py, 30, 0, Math.PI * 2);
+        ctx.stroke();
+    }
+
+    // Textes flottants (Near miss, Level up...)
     floatingTexts.forEach(ft => {
         ctx.fillStyle = ft.color;
-        ctx.font = "bold 12px monospace";
-        ctx.fillText(ft.text, ft.x - 30, ft.y);
+        ctx.globalAlpha = ft.alpha;
+        ctx.font = "bold 13px monospace";
+        ctx.textAlign = "center";
+        ctx.fillText(ft.text, ft.x, ft.y);
     });
+    ctx.globalAlpha = 1.0;
 }
 
 function loop(timestamp) {
-    if (!lastTime) lastTime = timestamp;
+    if (!gameRunning || isPaused) return;
     let dt = (timestamp - lastTime) / 1000;
-    if (dt > 0.1) dt = 0.1;
+    if (dt > 0.1) dt = 0.1; // Empêche les grands sauts d'image
     lastTime = timestamp;
 
     update(dt);
     draw();
 
-    if (gameRunning && !isPaused) {
-        requestAnimationFrame(loop);
-    }
+    requestAnimationFrame(loop);
 }
 
-// Enregistrement du Service Worker
-if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW Registration error:', err));
-    });
-}
-
+// Initialisation au chargement de la page
 openMenu();
 </script>
 </body>
