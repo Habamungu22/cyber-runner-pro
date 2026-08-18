@@ -876,7 +876,7 @@ function draw() {
 function loop(timestamp) {
     if (!lastTime) lastTime = timestamp;
     let dt = (timestamp - lastTime) / 1000;
-    if (dt > 0.1) dt = 0.1; // Empêche les sauts brutaux
+    if (dt > 0.1) dt = 0.1;
     lastTime = timestamp;
 
     update(dt);
@@ -885,6 +885,13 @@ function loop(timestamp) {
     if (gameRunning && !isPaused) {
         requestAnimationFrame(loop);
     }
+}
+
+// Enregistrement du Service Worker
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW Registration error:', err));
+    });
 }
 
 openMenu();
