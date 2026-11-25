@@ -1,0 +1,1200 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CYBER RUNNER PRO - Application développée par Haba Technologie</title>
+    <meta name="description" content="Cyber Runner Pro : course néon dans une ville futuriste. Application développée par Haba Technologie.">
+    <meta name="author" content="Haba Technologie">
+    <link rel="icon" href="icon-192.png">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#00f3ff">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <style>
+        :root {
+            --bg: #03050c;
+            --neon-blue: #00f3ff;
+            --neon-pink: #ff0055;
+            --neon-yellow: #ffe600;
+            --neon-green: #00ff66;
+            --panel-bg: rgba(10, 15, 28, 0.95);
+            --city-color: #00f3ff;
+        }
+
+        * { 
+            box-sizing: border-box; 
+            user-select: none; 
+            -webkit-user-select: none;
+            touch-action: manipulation; 
+        }
+
+        body {
+            margin: 0; padding: 0; background-color: var(--bg); color: #fff;
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            display: flex; align-items: center; justify-content: center;
+            min-height: 100vh; overflow: hidden; position: fixed; width: 100%; height: 100%;
+        }
+
+        #game-container {
+            position: relative; box-shadow: 0 0 10px var(--city-color);
+            border-radius: 12px; overflow: hidden; border: 2px solid var(--city-color);
+            width: min(100vw, calc(100vh * 450 / 680), 520px); width: min(100vw, calc(100dvh * 450 / 680), 520px); aspect-ratio: 450 / 680; height: auto;
+            display: flex; flex-direction: column; background: var(--bg);
+            transition: border-color 0.8s ease;
+        }
+
+        canvas { display: block; background: #050714; width: 100%; height: 100%; }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(5, 10, 20, 0.8); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: var(--neon-blue); border-radius: 4px; }
+
+        .hud {
+            position: absolute; top: 15px; left: 15px; right: 15px;
+            display: flex; justify-content: space-between; align-items: center;
+            font-family: monospace; font-size: 11px; font-weight: bold; z-index: 5;
+            gap: 6px;
+        }
+
+        .hud-card {
+            background: var(--panel-bg); padding: 8px 10px; border-radius: 6px;
+            border: 1px solid rgba(0, 243, 255, 0.3);
+        }
+
+        .hud-controls { display: flex; gap: 6px; }
+
+        .powerup-status {
+            position: absolute; top: 60px; left: 15px;
+            display: flex; flex-direction: column; gap: 6px; z-index: 5;
+            font-family: monospace; font-size: 11px;
+        }
+
+        .badge {
+            background: var(--panel-bg); padding: 4px 8px; border-radius: 4px;
+            font-weight: bold; border: 1px solid; display: none;
+        }
+
+        .badge.active { display: block; }
+        .badge-shield { border-color: var(--neon-blue); color: var(--neon-blue); }
+        .badge-magnet { border-color: var(--neon-pink); color: var(--neon-pink); }
+        .badge-turbo { border-color: var(--neon-yellow); color: var(--neon-yellow); }
+        .badge-double { border-color: var(--neon-green); color: var(--neon-green); }
+
+        .icon-btn {
+            background: var(--panel-bg); border: 1px solid rgba(0, 243, 255, 0.4);
+            color: var(--neon-blue); padding: 8px 10px; border-radius: 6px;
+            cursor: pointer; font-family: monospace; font-size: 11px; font-weight: bold;
+        }
+
+        .touch-controls {
+            position: absolute; bottom: 20px; left: 0; right: 0;
+            display: flex; justify-content: space-between; padding: 0 20px; z-index: 6;
+        }
+
+        .touch-btn {
+            background: rgba(0, 243, 255, 0.2); border: 2px solid var(--neon-blue);
+            color: var(--neon-blue); width: 68px; height: 68px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: bold;
+            cursor: pointer;
+        }
+
+        .touch-btn:active { background: rgba(0, 243, 255, 0.5); transform: scale(0.92); }
+
+        .overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: #060a17 !important;
+            display: flex; flex-direction: column; align-items: center; justify-content: flex-start; overflow-y: auto;
+            z-index: 10; padding: 20px;
+        }
+
+        h1 {
+            font-size: 24px; color: #fff; margin: 0; text-transform: uppercase;
+            text-shadow: 0 0 8px var(--neon-blue); letter-spacing: 1.5px; text-align: center;
+        }
+
+        .brand {
+            color: var(--neon-yellow); font-family: monospace; font-size: 11px;
+            font-weight: bold; margin-top: 4px; margin-bottom: 12px; letter-spacing: 1px;
+        }
+
+        .tabs { display: flex; gap: 6px; margin-bottom: 12px; width: 100%; }
+
+        .tab-btn {
+            flex: 1; background: rgba(10, 15, 28, 0.8); border: 1px solid rgba(0, 243, 255, 0.2);
+            color: #8a99ad; padding: 8px 4px; font-family: monospace; font-size: 10px; font-weight: bold;
+            cursor: pointer; border-radius: 6px; text-align: center;
+        }
+
+        .tab-btn.active {
+            border-color: var(--neon-blue); color: var(--neon-blue);
+            background: rgba(0, 243, 255, 0.15);
+        }
+
+        .content-container {
+            width: 100%; display: flex; flex-direction: column; gap: 8px;
+            margin-bottom: 12px; max-height: min(240px, 30vh); overflow-y: auto; padding-right: 4px;
+        }
+
+        .shop-item, .quest-card, .upgrade-card, .leader-item {
+            background: #0a0f1d;
+            border: 1px solid rgba(0, 243, 255, 0.2); border-radius: 8px; padding: 10px;
+            display: flex; align-items: center; justify-content: space-between; gap: 10px;
+        }
+
+        .shop-item.active {
+            border-color: var(--neon-blue);
+            background: rgba(0, 243, 255, 0.15);
+        }
+
+        .car-preview { width: 24px; height: 38px; border-radius: 5px; border: 2px solid; flex-shrink: 0; }
+
+        .btn-small {
+            background: rgba(5, 10, 20, 0.8); border: 1px solid var(--neon-green);
+            color: var(--neon-green); padding: 6px 10px; border-radius: 5px;
+            cursor: pointer; font-family: monospace; font-size: 10px; font-weight: bold;
+        }
+
+        .btn-small:disabled { border-color: #334155; color: #64748b; background: transparent; }
+
+        .btn {
+            background: rgba(255,0,85,0.3); border: 2px solid var(--neon-pink); color: #fff;
+            padding: 12px 24px; font-size: 14px; font-family: monospace; font-weight: bold;
+            cursor: pointer; border-radius: 8px; width: 100%; letter-spacing: 1px; text-transform: uppercase;
+        }
+
+        .btn-install {
+            background: rgba(0,255,106,0.2); border: 1px solid var(--neon-green); color: var(--neon-green);
+            padding: 8px 16px; font-size: 11px; font-family: monospace; font-weight: bold;
+            cursor: pointer; border-radius: 6px; width: 100%; margin-bottom: 10px; display: none; text-align: center;
+        }
+
+        .overlay > :first-child { margin-top: auto; }
+        .overlay > :last-child { margin-bottom: auto; }
+        .name-input {
+            width: 100%; max-width: 260px; padding: 12px; margin: 14px 0; text-align: center; font-size: 18px;
+            font-family: monospace; color: #fff; background: #0a0f1d; border: 2px solid rgba(0,243,255,.4); border-radius: 8px;
+        }
+        .name-input:focus { outline: none; border-color: var(--neon-blue); }
+        .help { color: #a0aab8; font-family: monospace; font-size: 11px; line-height: 1.6; text-align: center; margin: 8px 0; }
+        .race-bar { position: absolute; top: 6px; left: 14px; right: 14px; height: 7px; border-radius: 4px; background: rgba(255,255,255,.14); z-index: 6; overflow: hidden; }
+        #raceFill { height: 100%; width: 0; background: linear-gradient(90deg, var(--neon-blue), var(--neon-green)); box-shadow: 0 0 8px var(--neon-green); transition: width .2s; }
+        #lives { position: absolute; top: 60px; right: 14px; z-index: 6; font-size: 20px; letter-spacing: 3px; color: #ff2a5f; text-shadow: 0 0 8px #ff0055; }
+        #countdown { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 8; pointer-events: none; font: 900 110px monospace; color: #fff; text-shadow: 0 0 24px var(--neon-blue), 0 0 48px var(--neon-pink); }
+        #countdown.pop { animation: cdpop .6s ease-out; }
+        @keyframes cdpop { from { transform: scale(2.2); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        #confetti { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 11; pointer-events: none; background: transparent; }
+        .stars { font-size: 38px; letter-spacing: 6px; color: #ffe600; text-shadow: 0 0 14px #ffe600; margin: 6px 0; }
+        .reward { border: 2px solid var(--neon-green); border-radius: 12px; padding: 12px; margin: 10px 0; text-align: center; font-family: monospace; font-size: 13px; line-height: 1.6; color: #fff; background: rgba(0,255,106,.08); max-width: 290px; }
+        .reward b { color: var(--neon-green); }
+        .swatch { display: inline-block; width: 46px; height: 22px; border-radius: 6px; vertical-align: middle; margin-right: 8px; box-shadow: 0 0 12px currentColor; }
+        .err { color: #ff4d6d; font-family: monospace; font-size: 12px; min-height: 16px; text-align: center; }
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <canvas id="canvas" width="450" height="680"></canvas>
+
+    <!-- HUD -->
+    <div class="hud">
+        <div class="hud-card">SCORE: <span id="score" style="color: var(--neon-blue);">0</span> <span id="multiplier" style="color: var(--neon-yellow);">x1</span></div>
+        <div class="hud-card" style="color: var(--neon-pink);">LVL <span id="level">1</span></div>
+        <div class="hud-card">PIÈCES: <span id="coins" style="color: var(--neon-green);">0</span></div>
+        <div class="hud-controls">
+            <button class="icon-btn" id="pauseBtn" onclick="togglePause()">⏸️</button>
+            <button class="icon-btn" id="musicToggleBtn" onclick="toggleMusic()">🔊</button>
+        </div>
+    </div>
+
+    <!-- Power-ups -->
+    <div class="powerup-status">
+        <div id="badgeShield" class="badge badge-shield">🛡️ BOUCLIER</div>
+        <div id="badgeMagnet" class="badge badge-magnet">🧲 AIMANT</div>
+        <div id="badgeTurbo" class="badge badge-turbo">⚡ TURBO</div>
+        <div id="badgeDouble" class="badge badge-double">2️⃣ PIÈCES x2</div>
+    </div>
+
+    <!-- Contrôles Tactiles -->
+    <div class="touch-controls">
+        <div class="touch-btn" id="btnLeft">◄</div>
+        <div class="touch-btn" id="btnJump">▲</div>
+        <div class="touch-btn" id="btnRight">►</div>
+    </div>
+
+    <!-- Menu Principal -->
+    <div id="startScreen" class="overlay">
+        <h1>Cyber Runner Pro</h1>
+        <div class="brand">Application développée par Haba Technologie</div>
+
+        <button id="installBtn" class="btn-install" onclick="installApp()">📲 TÉLÉCHARGER L'APPLICATION</button>
+
+        <div style="font-family: monospace; color: var(--neon-green); font-size: 12px; margin-bottom: 10px;">
+            💰 SOLDE : <span id="totalCoins">0</span> PIÈCES
+        </div>
+        <div style="font-family: monospace; font-size: 12px; margin-bottom: 10px; color: #a0aab8;">
+            CHAUFFEUR : <b id="playerName" style="color:#fff">-</b> <button class="btn-small" onclick="askName()">CHANGER</button>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-btn active" id="tabGarage" onclick="switchTab('garage')">GARAGE</button>
+            <button class="tab-btn" id="tabUpgrades" onclick="switchTab('upgrades')">BOOSTS</button>
+            <button class="tab-btn" id="tabQuests" onclick="switchTab('quests')">MISSIONS</button>
+            <button class="tab-btn" id="tabScores" onclick="switchTab('scores')">TOP 5</button>
+        </div>
+
+        <div class="content-container" id="garageView"></div>
+        <div class="content-container hidden" id="upgradesView"></div>
+        <div class="content-container hidden" id="questsView"></div>
+        <div class="content-container hidden" id="scoresView"></div>
+
+        <button class="btn" onclick="startGame()">LANCER LA COURSE</button>
+    </div>
+
+    <!-- HUD de course -->
+    <div class="race-bar"><div id="raceFill"></div></div>
+    <div id="lives">♥♥♥</div>
+    <div id="countdown" class="hidden">3</div>
+    <canvas id="confetti"></canvas>
+
+    <!-- Nom du chauffeur (obligatoire) -->
+    <div id="nameScreen" class="overlay hidden">
+        <h1>Bienvenue chauffeur</h1>
+        <div class="brand">Application développée par Haba Technologie</div>
+        <p class="help">Entre ton nom de chauffeur.<br>Il est obligatoire pour jouer.</p>
+        <input id="nameInput" class="name-input" maxlength="12" placeholder="Ton nom" autocomplete="off" onkeydown="if(event.key==='Enter')saveName()">
+        <div id="nameErr" class="err"></div>
+        <button class="btn" style="max-width:260px" onclick="saveName()">COMMENCER</button>
+    </div>
+
+    <!-- Course terminée : acclamations, nouvelle voiture, niveau suivant -->
+    <div id="levelScreen" class="overlay hidden">
+        <h1 id="lvTitle" style="color: var(--neon-green);">COURSE TERMINÉE</h1>
+        <div class="brand">Application développée par Haba Technologie</div>
+        <div id="lvStars" class="stars">★★★</div>
+        <p id="lvText" class="help" style="font-size:14px; color:#fff;"></p>
+        <div id="lvReward" class="reward"></div>
+        <p id="lvHelp" class="help hidden">Android : menu ⋮ puis « Installer l'application ».<br>iPhone : Partager puis « Sur l'écran d'accueil ».<br>Puis rouvrez le jeu depuis son icône.</p>
+        <div style="display:flex; flex-direction:column; gap:12px; width:100%; max-width:260px;">
+            <button id="lvContinueBtn" class="btn hidden" style="border-color: var(--neon-green); background: rgba(0,255,106,.2);" onclick="startNextLevel()">NIVEAU SUIVANT ▶</button>
+            <button id="lvInstallBtn" class="btn" style="border-color: var(--neon-green); background: rgba(0,255,106,.2);" onclick="installApp()">📲 INSTALLER POUR CONTINUER</button>
+            <button class="btn" style="border-color: var(--neon-blue); background: rgba(0,243,255,.1);" onclick="openMenu()">MENU / GARAGE</button>
+        </div>
+    </div>
+
+    <!-- Pause -->
+    <div id="pauseScreen" class="overlay hidden">
+        <h1>PAUSE</h1>
+        <div class="brand">Application développée par Haba Technologie</div>
+        <div style="display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 250px; margin-top: 20px;">
+            <button class="btn" style="border-color: var(--neon-blue);" onclick="togglePause()">REPRENDRE</button>
+            <button class="btn" onclick="quitToMenu()">MENU PRINCIPAL</button>
+        </div>
+    </div>
+
+    <!-- Game Over -->
+    <div id="gameOverScreen" class="overlay hidden">
+        <h1 id="goTitle" style="color: var(--neon-pink);">CRASH DÉTECTÉ</h1>
+        <div class="brand">Application développée par Haba Technologie</div>
+        <p style="color: #a0aab8; text-align: center; line-height: 1.6; font-family: monospace; margin: 10px 0; font-size: 12px;">
+            Chauffeur : <b id="finalName" style="color: #fff">-</b><br>
+            Score Session : <b id="finalScore" style="color: #fff">0</b><br>
+            Niveau Atteint : <b id="finalLevel" style="color: var(--neon-pink)">1</b><br>
+            Pièces Gagnées : <b id="gainedCoins" style="color: var(--neon-green)">0</b><br>
+            Temps de Survie : <b id="survivedTime" style="color: var(--neon-blue)">0</b>s<br>
+            Frôlements (Near Miss) : <b id="finalNearMisses" style="color: var(--neon-yellow)">0</b>
+        </p>
+        <button class="btn" onclick="openMenu()">MENUS / GARAGE</button>
+    </div>
+</div>
+
+<script>
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d", { alpha: false });
+const isMobile = /Mobi|Android|iPhone/i.test(navigator.userAgent);
+
+function resizeCanvas() {
+    const dpr = Math.min(window.devicePixelRatio || 1, isMobile ? 1.5 : 2);
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = Math.round(rect.width * dpr);
+    canvas.height = Math.round(rect.height * dpr);
+    ctx.setTransform(canvas.width / 450, 0, 0, canvas.height / 680, 0, 0);
+}
+window.addEventListener('resize', resizeCanvas);
+setTimeout(resizeCanvas, 100);
+
+function vibrate(ms = 30) {
+    if ("vibrate" in navigator) {
+        try { navigator.vibrate(ms); } catch (e) {}
+    }
+}
+
+const CARS = [
+    { id: 0, name: "Cyber Runner", price: 0, ability: "Aucune", color: "#00f3ff" },
+    { id: 1, name: "Neon Interceptor", price: 100, ability: "Vitesse latérale Max", color: "#ff0055" },
+    { id: 2, name: "Phantom Glider", price: 250, ability: "Aimant permanent", color: "#00ff66" },
+    { id: 3, name: "Hyper Titan", price: 500, ability: "Bouclier au départ", color: "#ffe600" }
+];
+
+const QUESTS_DEF = [
+    { id: "c30", title: "Collector", desc: "30 pièces en 1 partie", reward: 50 },
+    { id: "t45", title: "Survivant", desc: "Survivre 45 secondes", reward: 75 },
+    { id: "s1", title: "Invincible", desc: "Obtenir 1 Bouclier", reward: 40 }
+];
+
+const LEVEL_THEMES = [
+    { level: 1, color: "#00f3ff" },
+    { level: 2, color: "#a100ff" },
+    { level: 3, color: "#ff0055" },
+    { level: 4, color: "#00ff66" }
+];
+
+
+const ld = (k, d) => { try { const v = JSON.parse(localStorage.getItem(k)); return v == null ? d : v; } catch (e) { return d; } };
+const esc = s => String(s).replace(/[<>&"']/g, '');
+let bankCoins = +ld("cyber_bank_coins", 0) || 0;
+let unlockedCars = ld("cyber_unlocked_cars", [0]);
+let equippedCar = +ld("cyber_equipped_car", 0) || 0;
+let leaderBoard = ld("cyber_leaderboard", []);
+let upgrades = ld("cyber_upgrades", { magnet: 1, turbo: 1, double: 1 });
+let questState = ld("cyber_quests_state", {
+    c30: { done: false, claimed: false },
+    t45: { done: false, claimed: false },
+    s1: { done: false, claimed: false }
+});
+let playerName = ""; try { playerName = localStorage.getItem("cyber_name") || ""; } catch (e) {}
+
+let isPaused = false;
+let deferredPrompt = null;
+const installBtn = document.getElementById("installBtn");
+const isStandalone = () => matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+let installed = isStandalone();
+try { if (installed) localStorage.setItem("cyber_installed", "1"); else installed = localStorage.getItem("cyber_installed") === "1"; } catch (e) {}
+
+function markInstalled() {
+    installed = true; installBtn.style.display = "none";
+    try { localStorage.setItem("cyber_installed", "1"); } catch (e) {}
+    document.getElementById("lvInstallBtn").classList.add("hidden");
+    document.getElementById("lvHelp").classList.add("hidden");
+    document.getElementById("lvContinueBtn").classList.remove("hidden");
+}
+window.addEventListener("beforeinstallprompt", (e) => {
+    e.preventDefault(); deferredPrompt = e; if (!installed) installBtn.style.display = "block";
+});
+window.addEventListener("appinstalled", markInstalled);
+function installApp() {
+    if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then((r) => { if (r.outcome === "accepted") markInstalled(); deferredPrompt = null; }).catch(() => {});
+    } else {
+        document.getElementById("lvHelp").classList.remove("hidden");
+    }
+}
+function askName() {
+    document.getElementById("nameErr").innerText = "";
+    const i = document.getElementById("nameInput"); i.value = playerName;
+    document.getElementById("nameScreen").classList.remove("hidden"); setTimeout(() => i.focus(), 60);
+}
+function saveName() {
+    const v = document.getElementById("nameInput").value.trim();
+    if (v.length < 2) { document.getElementById("nameErr").innerText = "Le nom du chauffeur est obligatoire (2 lettres minimum)."; return; }
+    playerName = v.slice(0, 12);
+    try { localStorage.setItem("cyber_name", playerName); } catch (e) {}
+    document.getElementById("playerName").innerText = playerName;
+    document.getElementById("nameErr").innerText = "";
+    document.getElementById("nameScreen").classList.add("hidden");
+}
+
+function speakVoice(text) {
+    if (musicMuted || isMobile || !('speechSynthesis' in window)) return;
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'en-US'; utterance.pitch = 0.8; utterance.rate = 1.1;
+    window.speechSynthesis.speak(utterance);
+}
+
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let audioCtx = null, musicMuted = false, musicInterval = null, musicStep = 0;
+
+function initAudio() {
+    if (!audioCtx) audioCtx = new AudioCtx();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+}
+
+function toggleMusic() {
+    musicMuted = !musicMuted;
+    document.getElementById("musicToggleBtn").innerText = musicMuted ? "🔇" : "🔊";
+    if (musicMuted) { stopMusic(); if ('speechSynthesis' in window) window.speechSynthesis.cancel(); }
+    else if (gameRunning && !isPaused) startMusic();
+}
+
+function playSynthwaveNote() {
+    if (!audioCtx || musicMuted || !gameRunning || isPaused) return;
+    const bassNotes = [110, 110, 130.81, 110, 146.83, 110, 130.81, 98.00];
+    const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
+    osc.type = "sawtooth";
+    osc.frequency.setValueAtTime(bassNotes[musicStep % bassNotes.length], audioCtx.currentTime);
+    gain.gain.setValueAtTime(0.03, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.12);
+    osc.connect(gain); gain.connect(audioCtx.destination);
+    osc.start(); osc.stop(audioCtx.currentTime + 0.12);
+    musicStep++;
+}
+
+function startMusic() { stopMusic(); musicStep = 0; if (!musicMuted) musicInterval = setInterval(playSynthwaveNote, 130); }
+function stopMusic() { if (musicInterval) { clearInterval(musicInterval); musicInterval = null; } }
+
+function playSFX(freq1, freq2, type="sine", duration=0.2) {
+    if (!audioCtx || musicMuted) return;
+    const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
+    osc.type = type; osc.frequency.setValueAtTime(freq1, audioCtx.currentTime);
+    if (freq2) osc.frequency.exponentialRampToValueAtTime(freq2, audioCtx.currentTime + duration);
+    gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+    osc.connect(gain); gain.connect(audioCtx.destination);
+    osc.start(); osc.stop(audioCtx.currentTime + duration);
+}
+
+const lanes = [90, 225, 360];
+let currentLane = 1, playerX = lanes[1], playerY = 540;
+let isJumping = false, jumpHeight = 0, jumpTimer = 0;
+let gameRunning = false, score = 0, multiplier = 1, sessionCoins = 0, speed = 4.0;
+let gameStartTime = 0, currentLevel = 1, obstacleSpawnRate = 0.025, currentCityColor = "#00f3ff";
+let nearMissCount = 0, floatingTexts = [];
+
+let bossActive = false, bossY = -150, bossTimer = 0;
+let rainDrops = [];
+let hasShield = false, magnetTimer = 0, turboTimer = 0, doubleCoinsTimer = 0;
+let obstacles = [], coins = [], powerups = [], particles = [];
+let lastTime = 0, roadScroll = 0, rowDist = 0, lastDouble = false, multTimer = 0, invuln = 0, banked = 0, bossLaserTimer = 0, pendingLevel = 0, lives = 3, hitFlash = 0, counting = false, confettiRAF = 0;
+
+for(let i=0; i<(isMobile ? 12 : 25); i++) {
+    rainDrops.push({ x: Math.random()*450, y: Math.random()*680, speed: 7 + Math.random()*5 });
+}
+
+function togglePause() {
+    if (!gameRunning) return;
+    isPaused = !isPaused;
+    document.getElementById("pauseScreen").classList.toggle("hidden", !isPaused);
+    if (isPaused) stopMusic(); else { startMusic(); lastTime = performance.now(); requestAnimationFrame(loop); }
+}
+
+function quitToMenu() {
+    isPaused = false; gameRunning = false; stopMusic();
+    document.getElementById("pauseScreen").classList.add("hidden"); openMenu();
+}
+
+function switchTab(tab) {
+    ['garage', 'upgrades', 'quests', 'scores'].forEach(t => {
+        document.getElementById(`tab${t.charAt(0).toUpperCase() + t.slice(1)}`).classList.toggle("active", tab === t);
+        document.getElementById(`${t}View`).classList.toggle("hidden", tab !== t);
+    });
+}
+
+function addFloatingText(text, x, y, color="#ffe600") {
+    if (floatingTexts.length < 5) floatingTexts.push({ text, x, y, alpha: 1.0, color });
+}
+
+function renderGarage() {
+    const view = document.getElementById("garageView"); view.innerHTML = "";
+    CARS.forEach(car => {
+        const isUnlocked = unlockedCars.includes(car.id), isEquipped = equippedCar === car.id;
+        let btnHTML = isEquipped ? `<button class="btn-small" style="border-color: var(--neon-blue); color: var(--neon-blue);">ÉQUIPÉ</button>` :
+            (isUnlocked ? `<button class="btn-small" onclick="equipCar(${car.id})">CHOISIR</button>` :
+            `<button class="btn-small" style="border-color: var(--neon-yellow); color: var(--neon-yellow);" onclick="buyCar(${car.id})">${car.price} 💰</button>`);
+
+        view.innerHTML += `
+            <div class="shop-item ${isEquipped ? 'active' : ''}">
+                <div class="car-preview" style="background: ${car.color}; border-color: ${car.color};"></div>
+                <div style="flex-grow: 1;">
+                    <div style="font-weight: bold; font-size: 12px; color: ${car.color}">${car.name}</div>
+                    <div style="font-size: 10px; color: #a0aab8;">${car.ability}</div>
+                </div>
+                ${btnHTML}
+            </div>`;
+    });
+}
+
+function renderUpgrades() {
+    const view = document.getElementById("upgradesView"); view.innerHTML = "";
+    const list = [
+        { key: 'magnet', name: '🧲 AIMANT', desc: 'Durée augmentée' },
+        { key: 'turbo', name: '⚡ TURBO', desc: 'Durée augmentée' },
+        { key: 'double', name: '2️⃣ PIÈCES x2', desc: 'Durée augmentée' }
+    ];
+    list.forEach(u => {
+        let lvl = upgrades[u.key], price = lvl * 60;
+        let btn = lvl >= 5 ? `<button class="btn-small" disabled>MAX</button>` :
+            `<button class="btn-small" onclick="buyUpgrade('${u.key}', ${price})">NIV ${lvl+1} (${price} 💰)</button>`;
+
+        view.innerHTML += `
+            <div class="upgrade-card">
+                <div>
+                    <div style="font-size: 11px; font-weight: bold;">${u.name} (NIV ${lvl}/5)</div>
+                    <div style="font-size: 10px; color: #a0aab8;">${u.desc}</div>
+                </div>
+                ${btn}
+            </div>`;
+    });
+}
+
+function renderQuests() {
+    const view = document.getElementById("questsView"); view.innerHTML = "";
+    QUESTS_DEF.forEach(q => {
+        const st = questState[q.id];
+        let btnHTML = st.claimed ? `<button class="btn-small" disabled>REÇU</button>` :
+            (st.done ? `<button class="btn-small" style="background:var(--neon-green); color:#000" onclick="claimQuest('${q.id}')">RÉCLAMER</button>` :
+            `<button class="btn-small" disabled>EN COURS</button>`);
+
+        view.innerHTML += `
+            <div class="quest-card">
+                <div>
+                    <div style="font-size: 11px; font-weight: bold;">${q.title}</div>
+                    <div style="font-size: 10px; color: #a0aab8;">${q.desc}</div>
+                    <div style="color: var(--neon-yellow); font-family: monospace; font-size: 10px;">+${q.reward} PIÈCES</div>
+                </div>
+                ${btnHTML}
+            </div>`;
+    });
+}
+
+function renderScores() {
+    const view = document.getElementById("scoresView"); view.innerHTML = "";
+    if (leaderBoard.length === 0) {
+        view.innerHTML = `<div style="text-align:center; color:#8a99ad; font-size:11px; padding:10px;">AUCUN SCORE ENREGISTRÉ</div>`;
+        return;
+    }
+    leaderBoard.forEach((item, index) => {
+        view.innerHTML += `
+            <div class="leader-item">
+                <span style="color:var(--neon-yellow); font-weight:bold; font-size:12px;">#${index+1}</span>
+                <span style="font-size:11px; font-family:monospace; color:#fff;">${esc(item.name || '')} · ${item.score}</span>
+                <span style="font-size:10px; color:var(--neon-pink);">${item.date}</span>
+            </div>`;
+    });
+}
+
+function updateCoinsDisplay() { document.getElementById("totalCoins").innerText = bankCoins; }
+
+function claimQuest(id) {
+    const q = QUESTS_DEF.find(item => item.id === id);
+    if (q && questState[id].done && !questState[id].claimed) {
+        bankCoins += q.reward; questState[id].claimed = true;
+        saveProgress(); updateCoinsDisplay(); renderQuests(); playSFX(600, 1000, "triangle", 0.3);
+    }
+}
+
+function buyUpgrade(key, price) {
+    if (bankCoins >= price && upgrades[key] < 5) {
+        bankCoins -= price; upgrades[key]++;
+        saveProgress(); updateCoinsDisplay(); renderUpgrades(); playSFX(500, 900, "triangle", 0.3);
+    }
+}
+
+function buyCar(id) {
+    const car = CARS[id];
+    if (bankCoins >= car.price) {
+        bankCoins -= car.price; unlockedCars.push(id); equippedCar = id;
+        saveProgress(); updateCoinsDisplay(); renderGarage(); playSFX(400, 800, "triangle", 0.3);
+    }
+}
+
+function equipCar(id) { equippedCar = id; saveProgress(); renderGarage(); playSFX(500, 700, "sine", 0.15); }
+
+function saveProgress() {
+    localStorage.setItem("cyber_bank_coins", bankCoins);
+    localStorage.setItem("cyber_unlocked_cars", JSON.stringify(unlockedCars));
+    localStorage.setItem("cyber_equipped_car", equippedCar);
+    localStorage.setItem("cyber_quests_state", JSON.stringify(questState));
+    localStorage.setItem("cyber_upgrades", JSON.stringify(upgrades));
+    localStorage.setItem("cyber_leaderboard", JSON.stringify(leaderBoard));
+}
+
+function saveScoreToBoard(newScore) {
+    const dateStr = new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' });
+    leaderBoard.push({ score: newScore, date: dateStr, name: playerName || 'Haba' });
+    leaderBoard.sort((a, b) => b.score - a.score);
+    leaderBoard = leaderBoard.slice(0, 5);
+    localStorage.setItem("cyber_leaderboard", JSON.stringify(leaderBoard));
+}
+
+function openMenu() {
+    stopCelebration(); counting = false; document.getElementById("countdown").classList.add("hidden"); document.getElementById("levelScreen").classList.add("hidden");
+    updateCoinsDisplay(); renderGarage(); renderUpgrades(); renderQuests(); renderScores();
+    document.getElementById("startScreen").classList.remove("hidden");
+    document.getElementById("gameOverScreen").classList.add("hidden");
+    document.getElementById("pauseScreen").classList.add("hidden");
+}
+
+function triggerJump() { if (!isJumping && gameRunning && !isPaused) { isJumping = true; jumpTimer = 0; playSFX(200, 500, "square", 0.15); } }
+
+function addParticles(x, y, color, count = 3) {
+    if (isMobile) count = 2;
+    if (particles.length > 15) particles.splice(0, count);
+    for (let i = 0; i < count; i++) {
+        particles.push({
+            x, y,
+            vx: (Math.random() - 0.5) * 4, vy: (Math.random() - 0.5) * 4,
+            life: 10, maxLife: 10, color
+        });
+    }
+}
+
+function moveLeft() {
+    let speedMult = (equippedCar === 1) ? 1.5 : 1.0;
+    if (gameRunning && !isPaused && currentLane > 0) currentLane--;
+}
+function moveRight() {
+    let speedMult = (equippedCar === 1) ? 1.5 : 1.0;
+    if (gameRunning && !isPaused && currentLane < 2) currentLane++;
+}
+
+window.addEventListener("keydown", e => {
+    if (e.code === "KeyP" || e.code === "Escape") { togglePause(); return; }
+    if (!gameRunning || isPaused) return;
+    if (["ArrowLeft", "KeyA", "ArrowRight", "KeyD", "ArrowUp", "Space"].includes(e.code)) e.preventDefault();
+    if (e.repeat) return;
+    if (e.code === "ArrowLeft" || e.code === "KeyA") moveLeft();
+    if (e.code === "ArrowRight" || e.code === "KeyD") moveRight();
+    if (e.code === "Space" || e.code === "ArrowUp") triggerJump();
+});
+
+const addTouchHandler = (elem, callback) => {
+    elem.addEventListener("touchstart", (e) => { e.preventDefault(); callback(); }, { passive: false });
+    elem.addEventListener("mousedown", (e) => { e.preventDefault(); callback(); });
+};
+
+addTouchHandler(document.getElementById("btnLeft"), moveLeft);
+addTouchHandler(document.getElementById("btnRight"), moveRight);
+addTouchHandler(document.getElementById("btnJump"), triggerJump);
+
+function applyLevel(nl) {
+    currentLevel = nl;
+    currentCityColor = LEVEL_THEMES[currentLevel - 1].color;
+    document.documentElement.style.setProperty('--city-color', currentCityColor);
+    speakVoice(`Level ${currentLevel}`);
+    addParticles(225, 300, currentCityColor, 8);
+    bossActive = true; bossY = -150; bossTimer = 300; bossLaserTimer = 60;
+    addFloatingText("WARNING: BOSS!", 225, 200, "#ff0055");
+}
+
+const LEVEL_START = [0, 300, 700, 1200], LEVEL_END = [300, 700, 1200, 2000];
+const REWARD_CAR = { 1: 1, 2: 2, 3: 3 };   /* une nouvelle voiture à chaque course réussie */
+
+function setLives(n) {
+    lives = n;
+    document.getElementById("lives").innerText = "♥".repeat(Math.max(0, n)) + "♡".repeat(Math.max(0, 3 - n));
+}
+
+/* Compte à rebours 3-2-1-GO avant chaque course */
+function runCountdown(done) {
+    counting = true;
+    const el = document.getElementById("countdown"); el.classList.remove("hidden");
+    const frame = () => { if (counting) { draw(); requestAnimationFrame(frame); } };
+    frame();
+    let n = 3;
+    const step = () => {
+        el.innerText = n > 0 ? n : "GO!";
+        el.classList.remove("pop"); void el.offsetWidth; el.classList.add("pop");
+        playSFX(n > 0 ? 440 : 880, null, "square", 0.15);
+        if (n === 0) { setTimeout(() => { counting = false; el.classList.add("hidden"); done(); }, 600); return; }
+        n--; setTimeout(step, 750);
+    };
+    step();
+}
+function beginRace() {
+    gameRunning = true; isPaused = false; lastTime = performance.now();
+    startMusic(); requestAnimationFrame(loop);
+}
+
+/* Acclamations de la foule : bruit filtré + applaudissements + fanfare */
+function cheers() {
+    if (!audioCtx || musicMuted) return;
+    const t0 = audioCtx.currentTime, sr = audioCtx.sampleRate;
+    const buf = audioCtx.createBuffer(1, sr * 4, sr), d = buf.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+    const src = audioCtx.createBufferSource(); src.buffer = buf;
+    const bp = audioCtx.createBiquadFilter(); bp.type = "bandpass"; bp.frequency.value = 900; bp.Q.value = 0.7;
+    const g = audioCtx.createGain();
+    g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(0.14, t0 + 0.4);
+    g.gain.setValueAtTime(0.14, t0 + 2.6); g.gain.exponentialRampToValueAtTime(0.0001, t0 + 4);
+    src.connect(bp); bp.connect(g); g.connect(audioCtx.destination); src.start(t0);
+    const cb = audioCtx.createBuffer(1, Math.floor(sr * 0.04), sr), cd = cb.getChannelData(0);
+    for (let i = 0; i < cd.length; i++) cd[i] = (Math.random() * 2 - 1) * (1 - i / cd.length);
+    for (let i = 0; i < 40; i++) {
+        const c = audioCtx.createBufferSource(); c.buffer = cb;
+        const hp = audioCtx.createBiquadFilter(); hp.type = "highpass"; hp.frequency.value = 1500;
+        const cg = audioCtx.createGain(); cg.gain.value = 0.05 + Math.random() * 0.08;
+        c.connect(hp); hp.connect(cg); cg.connect(audioCtx.destination); c.start(t0 + 0.3 + Math.random() * 3.4);
+    }
+    [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => playSFX(f, f * 1.01, "triangle", 0.35), i * 160));
+}
+function startConfetti() {
+    const cvs = document.getElementById("confetti"), r = cvs.getBoundingClientRect(), dpr = Math.min(window.devicePixelRatio || 1, 2);
+    cvs.width = Math.round(r.width * dpr); cvs.height = Math.round(r.height * dpr);
+    const c = cvs.getContext("2d"), sx = cvs.width / 450, sy = cvs.height / 680;
+    const cols = ["#00f3ff", "#ff0055", "#ffe600", "#00ff66", "#ffffff", "#b967ff"];
+    const ps = Array.from({ length: 120 }, () => ({ x: Math.random() * 450, y: -Math.random() * 680, vx: (Math.random() - .5) * 2, vy: 2 + Math.random() * 3, s: 5 + Math.random() * 6, a: Math.random() * 6, va: (Math.random() - .5) * .3, col: cols[Math.floor(Math.random() * cols.length)] }));
+    const t0 = performance.now();
+    cancelAnimationFrame(confettiRAF);
+    const tick = () => {
+        c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, cvs.width, cvs.height); c.setTransform(sx, 0, 0, sy, 0, 0);
+        ps.forEach(q => {
+            q.x += q.vx + Math.sin(q.a) * .6; q.y += q.vy; q.a += q.va;
+            if (q.y > 700 && performance.now() - t0 < 6000) { q.y = -10; q.x = Math.random() * 450; }
+            c.save(); c.translate(q.x, q.y); c.rotate(q.a); c.fillStyle = q.col; c.fillRect(-q.s / 2, -q.s / 4, q.s, q.s / 2); c.restore();
+        });
+        confettiRAF = requestAnimationFrame(tick);
+    };
+    tick();
+}
+function stopCelebration() {
+    cancelAnimationFrame(confettiRAF);
+    const cvs = document.getElementById("confetti"), c = cvs.getContext("2d");
+    c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, cvs.width, cvs.height);
+}
+function celebrate() { startConfetti(); cheers(); vibrate([60, 40, 60, 40, 120]); speakVoice("Victory"); }
+
+/* Course terminée : acclamations, nouvelle voiture, puis niveau suivant */
+function levelComplete() {
+    gameRunning = false; stopMusic();
+    bankCoins += sessionCoins - banked; banked = sessionCoins;
+    const lv = currentLevel, carId = REWARD_CAR[lv]; let reward;
+    if (carId !== undefined && !unlockedCars.includes(carId)) {
+        unlockedCars.push(carId); equippedCar = carId;
+        reward = `<span class="swatch" style="color:${CARS[carId].color}; background:${CARS[carId].color}"></span><b>NOUVELLE VOITURE DÉBLOQUÉE</b><br>${esc(CARS[carId].name)} : équipée pour la suite !`;
+    } else { bankCoins += 100; reward = "<b>BONUS</b> : +100 pièces"; }
+    saveProgress();
+    const st = Math.max(1, lives);
+    document.getElementById("lvTitle").innerText = `COURSE ${lv} TERMINÉE !`;
+    document.getElementById("lvStars").innerText = "★".repeat(st) + "☆".repeat(3 - st);
+    document.getElementById("lvText").innerText = `Bravo ${playerName} ! La foule t'acclame !` + (installed ? "" : ` Pour passer au niveau ${lv + 1}, installez l'application.`);
+    document.getElementById("lvReward").innerHTML = reward;
+    document.getElementById("lvContinueBtn").classList.toggle("hidden", !installed);
+    document.getElementById("lvInstallBtn").classList.toggle("hidden", installed);
+    document.getElementById("lvHelp").classList.add("hidden");
+    document.getElementById("levelScreen").classList.remove("hidden");
+    celebrate();
+}
+function startNextLevel() {
+    stopCelebration(); document.getElementById("levelScreen").classList.add("hidden");
+    obstacles = []; coins = []; powerups = []; particles = []; floatingTexts = [];
+    rowDist = 140; lastDouble = false; multiplier = 1; multTimer = 0; invuln = 90;
+    turboTimer = 0; magnetTimer = 0; doubleCoinsTimer = 0; hasShield = (equippedCar === 3);
+    currentLane = 1; playerX = lanes[1]; isJumping = false; jumpHeight = 0;
+    setLives(3); applyLevel(currentLevel + 1);
+    runCountdown(beginRace);
+}
+
+function updateDifficultyAndCity() {
+    const raw = Math.floor(score / 10), a = LEVEL_START[currentLevel - 1], b = LEVEL_END[currentLevel - 1];
+    document.getElementById("raceFill").style.width = Math.min(100, Math.max(0, (raw - a) / (b - a) * 100)) + "%";
+    document.getElementById("level").innerText = currentLevel;
+    if (raw >= b) { if (currentLevel >= 4) gameOver(true); else levelComplete(); }
+}
+
+function startGame() {
+    if (!playerName) { askName(); return; }
+    initAudio(); stopCelebration();
+    document.getElementById("startScreen").classList.add("hidden");
+    document.getElementById("gameOverScreen").classList.add("hidden");
+    document.getElementById("pauseScreen").classList.add("hidden");
+
+    currentLane = 1; playerX = lanes[1]; playerY = 540;
+    score = 0; multiplier = 1; sessionCoins = 0; speed = 4.0;
+    currentLevel = 1; obstacleSpawnRate = 0.025; nearMissCount = 0;
+    currentCityColor = LEVEL_THEMES[0].color;
+    document.documentElement.style.setProperty('--city-color', currentCityColor);
+
+    bossActive = false; floatingTexts = []; isJumping = false; jumpHeight = 0;
+    magnetTimer = 0; turboTimer = 0; doubleCoinsTimer = 0;
+    gameStartTime = Date.now(); isPaused = false;
+
+    hasShield = (equippedCar === 3);
+    obstacles = []; coins = []; powerups = []; particles = [];
+    roadScroll = 0; rowDist = 120; lastDouble = false; multTimer = 0; invuln = 0; banked = 0; bossLaserTimer = 0;
+    gameRunning = false; setLives(3); hitFlash = 0;
+    document.getElementById("raceFill").style.width = "0%";
+
+    updateUI(); speakVoice("Engine Started");
+    runCountdown(beginRace);
+}
+
+function updateUI() {
+    document.getElementById("badgeShield").classList.toggle("active", hasShield);
+    document.getElementById("badgeMagnet").classList.toggle("active", magnetTimer > 0 || equippedCar === 2);
+    document.getElementById("badgeTurbo").classList.toggle("active", turboTimer > 0);
+    document.getElementById("badgeDouble").classList.toggle("active", doubleCoinsTimer > 0);
+    document.getElementById("multiplier").innerText = `x${multiplier}`;
+}
+
+function checkQuests() {
+    let now = Math.floor((Date.now() - gameStartTime) / 1000);
+    if (sessionCoins >= 30) questState.c30.done = true;
+    if (now >= 45) questState.t45.done = true;
+    if (hasShield) questState.s1.done = true;
+    saveProgress();
+}
+
+function gameOver(won = false) {
+    gameRunning = false; stopMusic();
+    vibrate(won ? [60, 40, 60] : [100, 50, 100]);
+    if (won) [660, 830, 990, 1320].forEach((f, i) => setTimeout(() => playSFX(f, f * 1.2, "triangle", 0.2), i * 120));
+    else playSFX(150, 40, "sawtooth", 0.5);
+
+    bankCoins += sessionCoins - banked + (won ? 200 : 0); banked = sessionCoins;
+    if (won) celebrate();
+    const finalScoreVal = Math.floor(score / 10);
+    saveScoreToBoard(finalScoreVal);
+    saveProgress();
+
+    const t = document.getElementById("goTitle");
+    t.innerText = won ? "MISSION ACCOMPLIE" : "CRASH DÉTECTÉ";
+    t.style.color = won ? "var(--neon-green)" : "var(--neon-pink)";
+    document.getElementById("finalName").innerText = playerName || "Haba";
+    document.getElementById("finalScore").innerText = finalScoreVal;
+    document.getElementById("finalLevel").innerText = currentLevel;
+    document.getElementById("gainedCoins").innerText = sessionCoins;
+    document.getElementById("survivedTime").innerText = Math.floor((Date.now() - gameStartTime) / 1000);
+    document.getElementById("finalNearMisses").innerText = nearMissCount;
+    document.getElementById("gameOverScreen").classList.remove("hidden");
+}
+
+/* Position projetée : les objets naissent à l'horizon et grossissent en approchant */
+const HOR = 190, PYS = 560, ROADHW = 205, SIDEX = 238;
+const pOf = y => { const u = Math.max(0, (y + 80) / (playerY + 80)); return u * u; };
+const gyOf = p => HOR + (PYS - HOR) * p;
+const xOf = (lane, p) => 225 + (lane - 1) * 135 * p;
+function burst(lane, y, color, n) { const p = pOf(y); addParticles(xOf(lane, p), gyOf(p) - 20 * p, color, n); }
+const pickLane = () => Math.floor(Math.random() * 3);
+
+function spawnRow() {
+    const order = [0, 1, 2].sort(() => Math.random() - 0.5);
+    const dbl = !lastDouble && currentLevel > 1 && Math.random() < 0.3; lastDouble = dbl;
+    const n = dbl ? 2 : 1;
+    for (let i = 0; i < n; i++) {
+        const r = Math.random(), type = r < 0.22 ? 'laser' : (r < 0.4 ? 'truck' : 'car');
+        obstacles.push({ lane: order[i], lx: order[i], y: -80, type, isSmart: type === 'car' && Math.random() < 0.25, moved: false, nm: false });
+    }
+    const free = order[n];
+    if (Math.random() < 0.7) for (let j = 0; j < 3; j++) coins.push({ lane: free, y: -80 - j * 45 });
+    else if (Math.random() < 0.2) powerups.push({ lane: free, y: -80, type: ['shield', 'magnet', 'turbo', 'double'][Math.floor(Math.random() * 4)] });
+}
+
+function update(dt) {
+    if (!gameRunning || isPaused) return;
+    const k = dt * 60;
+    const cs = (turboTimer > 0 ? speed * 1.4 : speed) * k;
+    score += multiplier * k; roadScroll += cs / 620;
+    if (speed < 7.5) speed += 0.0003 * k;
+    if (magnetTimer > 0) magnetTimer -= k;
+    if (turboTimer > 0) turboTimer -= k;
+    if (doubleCoinsTimer > 0) doubleCoinsTimer -= k;
+    if (invuln > 0) invuln -= k;
+    if (hitFlash > 0) hitFlash = Math.max(0, hitFlash - 0.04 * k);
+    if (multTimer > 0) { multTimer -= k; if (multTimer <= 0) multiplier = 1; }
+
+    updateDifficultyAndCity(); if (!gameRunning) return;
+    updateUI(); checkQuests();
+    document.getElementById("score").innerText = Math.floor(score / 10);
+    document.getElementById("coins").innerText = sessionCoins;
+
+    playerX += (lanes[currentLane] - playerX) * ((equippedCar === 1) ? 0.35 : 0.25) * Math.min(1, k);
+    if (isJumping) {
+        jumpTimer += 0.08 * k; jumpHeight = Math.sin(jumpTimer) * 55;
+        if (jumpTimer >= Math.PI) { isJumping = false; jumpHeight = 0; }
+    }
+
+    if (bossActive) {
+        if (bossY < 80) bossY += 2 * k;
+        bossTimer -= k; bossLaserTimer -= k;
+        if (bossLaserTimer <= 0 && bossY >= 40) {
+            const free = [0, 1, 2].filter(l => !obstacles.some(o => o.lane === l && o.y < 170));
+            if (free.length > 1) obstacles.push({ lane: free[Math.floor(Math.random() * free.length)], lx: 0, y: -60, type: 'laser', nm: false });
+            bossLaserTimer = 60;
+        }
+        if (bossTimer <= 0) { bossActive = false; addFloatingText("BOSS DEFEATED!", 225, 200, "#00ff66"); sessionCoins += 20; }
+    }
+
+    rainDrops.forEach(r => { r.y += (r.speed + cs) * 0.8; if (r.y > 680) { r.y = -10; r.x = Math.random() * 450; } });
+
+    rowDist -= cs;
+    if (rowDist <= 0) { spawnRow(); rowDist = Math.max(150, 230 - currentLevel * 18); }
+
+    for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i]; p.x += p.vx * k; p.y += p.vy * k; p.life -= k;
+        if (p.life <= 0) particles.splice(i, 1);
+    }
+    for (let i = floatingTexts.length - 1; i >= 0; i--) {
+        const f = floatingTexts[i]; f.y -= k; f.alpha -= 0.02 * k;
+        if (f.alpha <= 0) floatingTexts.splice(i, 1);
+    }
+
+    for (let i = coins.length - 1; i >= 0; i--) {
+        const c = coins[i]; c.y += cs;
+        if ((magnetTimer > 0 || equippedCar === 2) && Math.abs(playerY - c.y) < 180) c.lane = currentLane;
+        if (Math.abs(playerX - lanes[c.lane]) < 38 && Math.abs(playerY - c.y) < 38) {
+            sessionCoins += (doubleCoinsTimer > 0 ? 2 : 1);
+            burst(c.lane, c.y, "#ffe600", 4); playSFX(800, 1200, "sine", 0.1);
+            coins.splice(i, 1); continue;
+        }
+        if (c.y > 720) coins.splice(i, 1);
+    }
+
+    for (let i = powerups.length - 1; i >= 0; i--) {
+        const p = powerups[i]; p.y += cs;
+        if (Math.abs(playerX - lanes[p.lane]) < 38 && Math.abs(playerY - p.y) < 38) {
+            const base = 300;
+            if (p.type === 'shield') { hasShield = true; speakVoice("Shield Active"); }
+            if (p.type === 'magnet') { magnetTimer = base + upgrades.magnet * 60; speakVoice("Magnet Active"); }
+            if (p.type === 'turbo') { turboTimer = base + upgrades.turbo * 60; speakVoice("Turbo Boost"); }
+            if (p.type === 'double') { doubleCoinsTimer = base + upgrades.double * 60; speakVoice("Double Coins"); }
+            addFloatingText(p.type.toUpperCase() + "!", playerX, PYS - 80, "#00f3ff");
+            burst(p.lane, p.y, "#00f3ff", 6); playSFX(400, 1000, "triangle", 0.25);
+            powerups.splice(i, 1); continue;
+        }
+        if (p.y > 720) powerups.splice(i, 1);
+    }
+
+    for (let i = obstacles.length - 1; i >= 0; i--) {
+        const o = obstacles[i];
+        o.y += o.type === 'laser' ? cs * 1.5 : cs;
+
+        if (o.isSmart && !o.moved && o.y > 200 && o.lane === currentLane) {
+            o.moved = true;
+            const opts = [0, 1, 2].filter(l => l !== o.lane && !obstacles.some(q => q !== o && q.lane === l && Math.abs(q.y - o.y) < 130));
+            if (opts.length) o.lane = opts[Math.floor(Math.random() * opts.length)];
+        }
+        o.lx += (o.lane - o.lx) * Math.min(1, 0.08 * k);
+
+        const distX = Math.abs(playerX - xOf(o.lx, 1)), distY = Math.abs(playerY - o.y);
+
+        if (!o.nm && !isJumping && distX >= 38 && distX < 70 && distY < 22) {
+            o.nm = true; nearMissCount++; multiplier = Math.min(5, multiplier + 1); multTimer = 360;
+            addFloatingText("NEAR MISS! x" + multiplier, playerX, PYS - 70, "#ffe600");
+            playSFX(900, 1100, "sine", 0.08);
+        }
+
+        if (distX < 38 && distY < 38) {
+            if (isJumping && jumpHeight > 25 && o.type === 'car') {
+                /* petite voiture : on saute par-dessus */
+            } else if (invuln > 0) {
+                /* protégé quelques instants après un choc */
+            } else if (hasShield) {
+                hasShield = false; invuln = 70;
+                addParticles(playerX, PYS - 30, "#00f3ff", 10);
+                playSFX(300, 100, "sawtooth", 0.3); speakVoice("Shield Destroyed");
+                obstacles.splice(i, 1); continue;
+            } else {
+                lives--; setLives(lives); invuln = 100; hitFlash = 1; vibrate([80, 40, 80]);
+                playSFX(160, 50, "sawtooth", 0.35); addParticles(playerX, PYS - 30, "#ff0055", 12);
+                obstacles.splice(i, 1);
+                if (lives <= 0) { gameOver(false); return; }
+                continue;
+            }
+        }
+        if (o.y > 760) obstacles.splice(i, 1);
+    }
+}
+
+/* ===================== Rendu ===================== */
+const hash = n => { const x = Math.sin(n * 127.1) * 43758.5453; return x - Math.floor(x); };
+const mod1 = v => ((v % 1) + 1) % 1;
+function rrPath(x, y, w, h, r) { r = Math.max(0, Math.min(r, w / 2, h / 2)); ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
+function fillRR(x, y, w, h, r, fill) { rrPath(x, y, w, h, r); ctx.fillStyle = fill; ctx.fill(); }
+function poly(pts, fill) { ctx.beginPath(); pts.forEach((q, i) => i ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1])); ctx.closePath(); ctx.fillStyle = fill; ctx.fill(); }
+const skyline = Array.from({ length: 22 }, (_, i) => ({ x: i * 22 - 8, w: 14 + hash(i) * 20, h: 25 + hash(i + 40) * 70 }));
+const stars = Array.from({ length: 40 }, (_, i) => ({ x: hash(i + 7) * 450, y: hash(i + 91) * HOR * 0.8, r: 0.5 + hash(i + 3) * 1.2 }));
+const BLD = ['#0b1030', '#13082b', '#081a2c'];
+
+function drawWall(w, c, T) {
+    const pN = w.u * w.u, uF = Math.max(0, w.u - 0.08), pF = uF * uF;
+    if (pN < 0.004) return;
+    const BH = 230 + hash(w.k * 3 + w.s) * 230, seed = w.k * 5 + w.s;
+    const P = (p, v) => [225 + w.s * SIDEX * p, gyOf(p) - v * BH * p];
+    poly([P(pN, 0), P(pF, 0), P(pF, 1), P(pN, 1)], BLD[Math.floor(hash(seed) * 3)]);
+    ctx.save(); ctx.strokeStyle = c; ctx.globalAlpha = 0.65; ctx.lineWidth = Math.max(1, 2 * pN); ctx.shadowColor = c; ctx.shadowBlur = 8 * pN;
+    ctx.beginPath(); const a = P(pN, 0), b = P(pN, 1), d = P(pF, 1); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.lineTo(d[0], d[1]); ctx.stroke(); ctx.restore();
+    if (pN < 0.06) return;
+    const rows = Math.max(4, Math.floor(BH / 48)), pal = [c, '#ff0055', '#ffe600', '#7df9ff'];
+    const Q = (u, v) => P(u * u, v);
+    for (let r = 0; r < rows; r++) for (let col = 0; col < 3; col++) {
+        const u0 = w.u + (uF - w.u) * (col + .2) / 3, u1 = w.u + (uF - w.u) * (col + .8) / 3;
+        const v0 = (r + .3) / (rows + .6), v1 = (r + .72) / (rows + .6), hv = hash(seed * 7 + r * 3 + col);
+        poly([Q(u0, v0), Q(u1, v0), Q(u1, v1), Q(u0, v1)], hv > 0.5 ? pal[Math.floor(hv * 40) % 4] : 'rgba(255,255,255,.05)');
+    }
+}
+
+function drawScene(T) {
+    const c = currentCityColor;
+    let g = ctx.createLinearGradient(0, 0, 0, HOR);
+    g.addColorStop(0, '#05020f'); g.addColorStop(.6, '#1d0b3a'); g.addColorStop(1, '#5a1050');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, 450, HOR + 1);
+    ctx.fillStyle = '#fff';
+    stars.forEach(s => { ctx.globalAlpha = 0.35 + 0.35 * Math.sin(T * 2 + s.x); ctx.fillRect(s.x, s.y, s.r, s.r); }); ctx.globalAlpha = 1;
+    g = ctx.createLinearGradient(0, HOR - 75, 0, HOR); g.addColorStop(0, '#ffe600'); g.addColorStop(1, '#ff0055');
+    ctx.save(); ctx.beginPath(); ctx.arc(225, HOR - 4, 70, Math.PI, 0); ctx.clip();
+    ctx.fillStyle = g; ctx.fillRect(150, HOR - 80, 150, 80);
+    ctx.fillStyle = '#2a0a45'; for (let i = 0; i < 5; i++) ctx.fillRect(150, HOR - 8 - i * 14, 150, 2 + i * 1.2);
+    ctx.restore();
+    skyline.forEach(b => {
+        ctx.fillStyle = '#0a0618'; ctx.fillRect(b.x, HOR - b.h, b.w, b.h);
+        ctx.globalAlpha = 0.6; ctx.fillStyle = c; ctx.fillRect(b.x, HOR - b.h, b.w, 1.5); ctx.globalAlpha = 1;
+    });
+    ctx.fillStyle = '#04050d'; ctx.fillRect(0, HOR, 450, 680 - HOR);
+
+    const pb = 1.4, yb = gyOf(pb);
+    g = ctx.createLinearGradient(0, HOR, 0, yb); g.addColorStop(0, '#1a1030'); g.addColorStop(1, '#0b0f22');
+    poly([[225, HOR], [225 - ROADHW * pb, yb], [225 + ROADHW * pb, yb]], g);
+    ctx.save(); ctx.strokeStyle = c; ctx.lineWidth = 3; ctx.shadowColor = c; ctx.shadowBlur = 12;
+    [-1, 1].forEach(s => { ctx.beginPath(); ctx.moveTo(225, HOR); ctx.lineTo(225 + s * ROADHW * pb, yb); ctx.stroke(); }); ctx.restore();
+    ctx.strokeStyle = c; ctx.lineWidth = 1;
+    for (let k = 0; k < 12; k++) {
+        const u = mod1(k / 12 + roadScroll), p = u * u; if (p < 0.004) continue;
+        ctx.globalAlpha = 0.1 + 0.25 * p; ctx.beginPath(); ctx.moveTo(225 - ROADHW * p, gyOf(p)); ctx.lineTo(225 + ROADHW * p, gyOf(p)); ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+    for (let k = 0; k < 12; k++) {
+        const u0 = mod1(k / 12 + roadScroll + 0.02), p0 = u0 * u0, p1 = (u0 + 0.03) * (u0 + 0.03);
+        if (p0 < 0.004 || p1 > 1.5) continue;
+        [-67.5, 67.5].forEach(off => poly([[225 + off * p0 - 2 * p0, gyOf(p0)], [225 + off * p0 + 2 * p0, gyOf(p0)], [225 + off * p1 + 2 * p1, gyOf(p1)], [225 + off * p1 - 2 * p1, gyOf(p1)]], 'rgba(230,246,255,.8)'));
+    }
+    const walls = [];
+    for (let k = 0; k < 9; k++) [-1, 1].forEach(s => walls.push({ k, s, u: mod1(k / 9 + roadScroll + (s > 0 ? 0.05 : 0)) }));
+    walls.sort((a, b) => a.u - b.u).forEach(w => drawWall(w, c, T));
+}
+
+function carRear(x, yg, p, col, lift = 0) {
+    const w = 66 * p, h = 46 * p, y = yg - lift;
+    ctx.beginPath(); ctx.ellipse(x, yg, w * 0.6, w * 0.09, 0, 0, 7); ctx.fillStyle = 'rgba(0,0,0,.45)'; ctx.fill();
+    ctx.save(); ctx.shadowColor = col; ctx.shadowBlur = 18 * p; fillRR(x - w * .46, y - h * .1, w * .92, h * .1, 4 * p, col); ctx.restore();
+    fillRR(x - w * .53, y - h * .34, w * .14, h * .34, 3 * p, '#08090f'); fillRR(x + w * .39, y - h * .34, w * .14, h * .34, 3 * p, '#08090f');
+    fillRR(x - w / 2, y - h * .62, w, h * .5, 7 * p, col);
+    fillRR(x - w * .36, y - h, w * .72, h * .46, 8 * p, col);
+    fillRR(x - w * .36, y - h, w * .72, h * .46, 8 * p, 'rgba(0,0,0,.2)');
+    fillRR(x - w / 2, y - h * .3, w, h * .18, 5 * p, 'rgba(0,0,0,.3)');
+    fillRR(x - w * .3, y - h * .93, w * .6, h * .3, 5 * p, '#0a1220');
+    fillRR(x - w * .3, y - h * .93, w * .6, h * .09, 5 * p, 'rgba(255,255,255,.14)');
+    ctx.save(); ctx.shadowColor = '#ff2a2a'; ctx.shadowBlur = 10 * p;
+    fillRR(x - w * .47, y - h * .52, w * .28, h * .1, 2 * p, '#ff4040'); fillRR(x + w * .19, y - h * .52, w * .28, h * .1, 2 * p, '#ff4040'); ctx.restore();
+    fillRR(x - w * .14, y - h * .34, w * .28, h * .1, 1.5 * p, '#e8eef5');
+}
+function truckRear(x, yg, p, c) {
+    const w = 84 * p, h = 104 * p;
+    ctx.beginPath(); ctx.ellipse(x, yg, w * 0.6, w * 0.09, 0, 0, 7); ctx.fillStyle = 'rgba(0,0,0,.45)'; ctx.fill();
+    fillRR(x - w * .5, y0(yg, h, .0), w * .15, h * .2, 3 * p, '#08090f'); fillRR(x + w * .35, y0(yg, h, .0), w * .15, h * .2, 3 * p, '#08090f');
+    fillRR(x - w / 2, yg - h, w, h * .86, 4 * p, '#2a3350');
+    fillRR(x - w / 2, yg - h * .62, w, h * .07, 0, c);
+    fillRR(x - 1 * p, yg - h * .98, 2 * p, h * .82, 0, 'rgba(0,0,0,.4)');
+    fillRR(x - w / 2, yg - h * .14, w, h * .07, 2 * p, '#111522');
+    ctx.save(); ctx.shadowColor = '#ff2a2a'; ctx.shadowBlur = 10 * p;
+    fillRR(x - w * .47, yg - h * .3, w * .13, h * .1, 2 * p, '#ff4040'); fillRR(x + w * .34, yg - h * .3, w * .13, h * .1, 2 * p, '#ff4040'); ctx.restore();
+}
+const y0 = (yg, h) => yg - h * 0.2;
+function laserGate(x, yg, p, T) {
+    const hw = 54 * p, ph = 46 * p;
+    ctx.beginPath(); ctx.ellipse(x, yg, hw, 6 * p, 0, 0, 7); ctx.fillStyle = 'rgba(255,0,85,.25)'; ctx.fill();
+    fillRR(x - hw - 4 * p, yg - ph, 8 * p, ph, 2 * p, '#222a44'); fillRR(x + hw - 4 * p, yg - ph, 8 * p, ph, 2 * p, '#222a44');
+    ctx.save(); ctx.globalAlpha = 0.75 + 0.25 * Math.sin(T * 40); ctx.shadowColor = '#ff0055'; ctx.shadowBlur = 14 * p;
+    fillRR(x - hw, yg - ph * .72, hw * 2, 7 * p, 3 * p, '#ff3b7a'); fillRR(x - hw, yg - ph * .4, hw * 2, 5 * p, 3 * p, '#ff0055'); ctx.restore();
+}
+function drawBoss(T) {
+    const x = 225 + Math.sin(T * 1.6) * 30, y = bossY;
+    ctx.save(); ctx.shadowColor = '#ff0055'; ctx.shadowBlur = 20;
+    ctx.strokeStyle = '#ff0055'; ctx.lineWidth = 3; ctx.fillStyle = '#1a0a1e';
+    ctx.beginPath(); for (let i = 0; i < 6; i++) { const a = i * Math.PI / 3; ctx.lineTo(x + Math.cos(a) * 42, y + Math.sin(a) * 34); } ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x - 90, y); ctx.lineTo(x - 42, y); ctx.moveTo(x + 42, y); ctx.lineTo(x + 90, y); ctx.stroke();
+    ctx.fillStyle = '#ff0055'; ctx.beginPath(); ctx.arc(x, y, 11 + Math.sin(T * 6) * 2, 0, 7); ctx.fill(); ctx.restore();
+}
+
+function draw() {
+    const T = performance.now() / 1000;
+    ctx.save();
+    if (hitFlash > 0) ctx.translate((Math.random() - .5) * 10 * hitFlash, (Math.random() - .5) * 10 * hitFlash);
+    ctx.fillStyle = "#050714"; ctx.fillRect(-20, -20, 490, 720);
+    drawScene(T);
+
+    ctx.strokeStyle = "#7df9ff"; ctx.globalAlpha = 0.18; ctx.lineWidth = 1;
+    rainDrops.forEach(r => { ctx.beginPath(); ctx.moveTo(r.x, r.y); ctx.lineTo(r.x - 1, r.y + 8); ctx.stroke(); });
+    ctx.globalAlpha = 1;
+    if (bossActive) drawBoss(T);
+
+    const list = [];
+    coins.forEach(cn => list.push({ y: cn.y, f: () => {
+        const p = pOf(cn.y), x = xOf(cn.lane, p), y = gyOf(p) - 26 * p, rx = Math.max(1, 10 * p * Math.abs(Math.cos(T * 5 + cn.y * .02))), ry = 10 * p;
+        ctx.save(); ctx.shadowColor = '#ffe600'; ctx.shadowBlur = 10 * p; ctx.fillStyle = '#ffe600'; ctx.beginPath(); ctx.ellipse(x, y, rx, ry, 0, 0, 7); ctx.fill(); ctx.restore();
+        ctx.strokeStyle = '#b8860b'; ctx.lineWidth = Math.max(1, 2 * p); ctx.beginPath(); ctx.ellipse(x, y, rx * .6, ry * .6, 0, 0, 7); ctx.stroke();
+    } }));
+    powerups.forEach(pu => list.push({ y: pu.y, f: () => {
+        const p = pOf(pu.y), x = xOf(pu.lane, p), y = gyOf(p) - 32 * p;
+        const col = { shield: '#00f3ff', magnet: '#ff0055', turbo: '#ffe600', double: '#00ff66' }[pu.type];
+        const ico = { shield: '🛡', magnet: '🧲', turbo: '⚡', double: 'x2' }[pu.type];
+        ctx.save(); ctx.shadowColor = col; ctx.shadowBlur = 16 * p; ctx.fillStyle = 'rgba(5,10,25,.85)'; ctx.strokeStyle = col; ctx.lineWidth = Math.max(1, 3 * p);
+        ctx.beginPath(); ctx.arc(x, y, 17 * p, 0, 7); ctx.fill(); ctx.stroke(); ctx.restore();
+        ctx.font = `bold ${Math.max(6, 15 * p)}px sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = col; ctx.fillText(ico, x, y + p); ctx.textBaseline = 'alphabetic';
+    } }));
+    obstacles.forEach(o => list.push({ y: o.y, f: () => {
+        const p = pOf(o.y), x = xOf(o.lx, p), yg = gyOf(p);
+        if (o.type === 'laser') laserGate(x, yg, p, T);
+        else if (o.type === 'truck') truckRear(x, yg, p, currentCityColor);
+        else carRear(x, yg, p, o.isSmart ? '#ffe600' : '#ff0055');
+    } }));
+    list.push({ y: playerY, f: () => {
+        const col = CARS[equippedCar].color;
+        if (invuln > 0 && Math.floor(T * 18) % 2) ctx.globalAlpha = 0.4;
+        carRear(playerX, PYS, 1, col, jumpHeight);
+        if (turboTimer > 0) { ctx.fillStyle = '#ff9d00'; [-18, 18].forEach(dx => { ctx.beginPath(); ctx.moveTo(playerX + dx - 6, PYS - jumpHeight + 2); ctx.lineTo(playerX + dx + 6, PYS - jumpHeight + 2); ctx.lineTo(playerX + dx, PYS - jumpHeight + 22 + Math.random() * 8); ctx.fill(); }); }
+        ctx.globalAlpha = 1;
+        if (hasShield) { ctx.save(); ctx.strokeStyle = '#00f3ff'; ctx.lineWidth = 3; ctx.shadowColor = '#00f3ff'; ctx.shadowBlur = 14; ctx.beginPath(); ctx.arc(playerX, PYS - jumpHeight - 24, 50, 0, 7); ctx.stroke(); ctx.restore(); }
+        const nm = playerName || 'Haba'; ctx.font = 'bold 11px monospace'; const tw = ctx.measureText(nm).width + 14, ty = PYS - jumpHeight - 66;
+        fillRR(playerX - tw / 2, ty - 12, tw, 17, 8, 'rgba(5,10,25,.8)'); ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.fillText(nm, playerX, ty);
+    } });
+    list.sort((a, b) => a.y - b.y).forEach(e => e.f());
+
+    particles.forEach(p => { ctx.fillStyle = p.color; ctx.globalAlpha = Math.max(0, p.life / p.maxLife); ctx.fillRect(p.x, p.y, 3, 3); });
+    ctx.globalAlpha = 1;
+    floatingTexts.forEach(ft => { ctx.fillStyle = ft.color; ctx.globalAlpha = ft.alpha; ctx.font = "bold 13px monospace"; ctx.textAlign = "center"; ctx.fillText(ft.text, ft.x, ft.y); });
+    ctx.globalAlpha = 1;
+    const v = ctx.createRadialGradient(225, 360, 220, 225, 360, 450); v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, 'rgba(0,0,0,.5)');
+    ctx.fillStyle = v; ctx.fillRect(0, 0, 450, 680);
+    ctx.restore();
+    if (hitFlash > 0) { ctx.fillStyle = `rgba(255,0,60,${hitFlash * 0.35})`; ctx.fillRect(0, 0, 450, 680); }
+}
+
+function loop(timestamp) {
+    if (!gameRunning || isPaused) return;
+    let dt = (timestamp - lastTime) / 1000;
+    if (dt > 0.1) dt = 0.1; // Empêche les grands sauts d'image
+    lastTime = timestamp;
+
+    update(dt);
+    draw();
+
+    requestAnimationFrame(loop);
+}
+
+/* Glisser : côtés = changer de voie, haut = sauter */
+(() => {
+    let sx = 0, sy = 0; const gc = document.getElementById('game-container'), skip = e => e.target.closest('.touch-btn, .hud, .overlay');
+    gc.addEventListener('touchstart', e => { if (skip(e)) return; sx = e.touches[0].clientX; sy = e.touches[0].clientY; }, { passive: true });
+    gc.addEventListener('touchend', e => {
+        if (skip(e)) return; const t = e.changedTouches[0], dx = t.clientX - sx, dy = t.clientY - sy;
+        if (Math.abs(dx) > 30 && Math.abs(dx) > Math.abs(dy)) (dx > 0 ? moveRight : moveLeft)(); else if (dy < -30) triggerJump();
+    }, { passive: true });
+})();
+document.addEventListener('visibilitychange', () => { if (document.hidden && gameRunning && !isPaused) togglePause(); });
+if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+
+// Initialisation au chargement de la page
+resizeCanvas();
+if (installed) installBtn.style.display = "none";
+document.getElementById("playerName").innerText = playerName || "-";
+openMenu();
+if (!playerName) askName();
+</script>
+</body>
+</html>
